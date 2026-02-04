@@ -6,7 +6,8 @@ import java.util.List;
 import application.model.FilteredResult;
 import application.model.TestResult;
 import application.result.ResultFilter;
-import application.result.ResultManager;
+import application.result.ResultRepository;
+import application.result.FileResultRepository;
 
 /**
  * 結果を追加しフィルターにかけ、渡すクラス
@@ -16,11 +17,13 @@ import application.result.ResultManager;
 public class UserDataManager {
     private static final UserDataManager instance = new UserDataManager();
 
+    private final ResultRepository repository;
     private List<TestResult> allResults;
     private FilteredResult filteredResult;
 
     //初めてインスタンス化されるとき全結果を呼びフィルターを掛ける
     private UserDataManager() {
+        this.repository = new FileResultRepository();
         loadAndFilterAllResults();
     };
 
@@ -33,8 +36,8 @@ public class UserDataManager {
      * 結果が保存されているファイルから全結果を取得し、フィルタをかける
      */
     private void loadAndFilterAllResults() {
-        ResultManager manager = new ResultManager();
-        this.allResults = manager.loadResultsFromFile();
+        FileResultRepository manager = new FileResultRepository();
+        this.allResults = manager.findAll();
 
         if (this.allResults != null && !this.allResults.isEmpty()) {
             this.filteredResult = ResultFilter.filterAll(allResults);
