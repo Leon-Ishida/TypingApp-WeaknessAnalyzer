@@ -1,0 +1,224 @@
+package application.service;
+
+import application.model.PracticeWords;
+import application.model.TestResult;
+import application.service.WeaknessAnalyzer.InsertionPair;
+import application.service.WeaknessAnalyzer.SubstitutionPair;
+import application.service.WeaknessAnalyzer.TranspositionPair;
+import application.model.Period;
+import application.model.AppConfig;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
+
+/**
+ * 練習用の単語リストを作るクラス
+ */
+
+public class PracticeService {
+    private final WordManager wordManager;
+    //各ミスの種類ごとに起こりやすいミスの第何位まで取るか決める定数
+    private static final int WEAKNESS_ANALYSIS_LIMIT = 1;
+    //
+    private static final int ADD_LIMIT_FOR_SET = 3;
+
+
+    //wordManagerを設定する
+    public PracticeService(WordManager wordManager) {
+        this.wordManager = wordManager;
+    }
+
+    /**
+     * 2つ作った練習用リストをPracticeWordsというデータクラスに格納するメソッド
+     * @param targetResult 練習問題を作成するためにミスを調べる対象となるリスト
+     * @return 各ミスの種類ごとに起こりやすいミスを含んだ単語リストと頻繁にミスした単語リストを格納したPracticeWordsオブジェクト
+     */
+    public PracticeWords generatePracticeWords(List<TestResult> targetResult) {
+        WeaknessAnalyzer weaknessAnalyzer = new WeaknessAnalyzer(targetResult);
+        List<String> weaknessWords = generateWeaknessWords(weaknessAnalyzer);
+        List<String> frequentMistakeWords = generateFrequentWords(targetResult);
+        return new PracticeWords(weaknessWords, frequentMistakeWords);
+    }
+
+    /**
+     * 各ミスの種類ごとに起こりやすいミスを含んだ単語リストを作るメソッド
+     * @param weaknessAnalyzer 各ミスの種類ごとに起こりやすいミスを調べる引数
+     * @return 各ミスの種類ごとに起こりやすいミスを含んだ単語リスト
+     */
+    private List<String> generateWeaknessWords(WeaknessAnalyzer weaknessAnalyzer) {
+        Set<String> resultSet = new HashSet<>();
+
+        //置換ミスのミスの傾向を調べ、それに対応した単語を単語リストのSetに格納する
+        Map<SubstitutionPair, Long> topSub = weaknessAnalyzer.findTopSubstitutionMistakes(WEAKNESS_ANALYSIS_LIMIT);
+        if (!topSub.isEmpty()) {
+            SubstitutionPair subPair = topSub.keySet().iterator().next();
+            addWordsContainsChars(resultSet, ADD_LIMIT_FOR_SET, subPair.expected(), subPair.actual());
+        }
+
+        //交換ミスのミスの傾向を調べ、それに対応した単語を単語リストのSetに格納する
+        Map<TranspositionPair, Long> topTrans = weaknessAnalyzer.findTopTranspositionMistakes(WEAKNESS_ANALYSIS_LIMIT);
+        if (!topTrans.isEmpty()) {
+            TranspositionPair transPair = topTrans.keySet().iterator().next();
+            addWordsForTranspositionMistake(resultSet, ADD_LIMIT_FOR_SET, transPair);
+        }
+
+        //削除ミスのミスの傾向を調べ、それに対応した単語を単語リストのSetに格納する
+        Map<Character, Long> topDel = weaknessAnalyzer.findTopDeletionMistakes(WEAKNESS_ANALYSIS_LIMIT);
+        if (!topDel.isEmpty()) {
+            Character delCh = topDel.keySet().iterator().next();
+            addWordsContainsChars(resultSet, ADD_LIMIT_FOR_SET, delCh);
+        }
+
+        //挿入ミスのミスの傾向を調べ、それに対応した単語を単語リストのSetに格納する
+        Map<InsertionPair, Long> topIns = weaknessAnalyzer.findTopInsertionMistakes(WEAKNESS_ANALYSIS_LIMIT);
+        if (!topIns.isEmpty()) {
+            InsertionPair insPair = topIns.keySet().iterator().next();
+            addWordsForInsertionMistake(resultSet, ADD_LIMIT_FOR_SET, insPair);
+        }
+
+        //単語数が問題数に満たない場合満たすようにランダムに追加する
+        while (resultSet.size() < AppConfig.PRACTICE_NUMBERS_OF_QUESTIONS) {
+            resultSet.add(wordManager.getRandomWord());
+        }
+        //SetをListにして順番をシャッフルする
+        List<String> wordList = new ArrayList<>(resultSet);
+        Collections.shuffle(wordList);
+
+        //単語数が問題数より多い場合、単語数を減らす
+        if (wordList.size() > AppConfig.PRACTICE_NUMBERS_OF_QUESTIONS) {
+            wordList.subList(0, AppConfig.PRACTICE_NUMBERS_OF_QUESTIONS);
+        }
+
+        return wordList;
+    }
+
+    /**
+     * 挿入ミスの傾向に対応した単語を探し、単語リストに格納するメソッド
+     * 先頭に挿入した場合は正解の先頭の文字で始まる単語、末尾に挿入した場合は正解の末尾の文字で終わる単語、
+     * 途中に挿入した場合はその前後の文字が続いて出てくる単語を探す
+     * @param resultSet 見つけた単語を格納するSet
+     * @param limit Setに格納する単語数(多めにするために2倍して使用)
+     * @param pair 挿入した文字の前後の文字のペア
+     */
+    private void addWordsForInsertionMistake(Set<String> resultSet, int limit, InsertionPair pair) {
+        char beforeChar = pair.beforeChar();
+        char afterChar = pair.afterChar();
+        Predicate<String> filter;
+        if (beforeChar == '\0' && afterChar != '\0') {
+            //先頭に挿入した場合
+            String prefix = String.valueOf(afterChar);
+            filter = word -> word.startsWith(prefix);
+        } else if (beforeChar != '\0' && afterChar == '\0') {
+            //末尾に挿入した場合
+            String prefix = String.valueOf(beforeChar);
+            filter = word -> word.endsWith(prefix);
+        } else if (beforeChar != '\0' && afterChar != '\0') {
+            //途中に挿入した場合
+            String sequence = String.valueOf(beforeChar) + String.valueOf(afterChar);
+            filter = word -> word.contains(sequence);
+        } else {
+            //ガード節
+            filter = word -> false;
+        }
+
+        addWordsWithFilter(resultSet, limit, filter);
+    }
+
+    /**
+     * 交換ミスの傾向に対応した単語を探し、単語リストに格納するメソッド
+     * @param resultSet 見つけた単語を格納するSet
+     * @param limit Setに格納する単語数(多めにするために2倍して使用)
+     * @param pair 交換が起こった2文字のペア
+     */
+    private void addWordsForTranspositionMistake(Set<String> resultSet, int limit, TranspositionPair pair) {
+        String sequence1 = String.valueOf(pair.char1()) + String.valueOf(pair.char2());
+        String sequence2 = String.valueOf(pair.char2()) + String.valueOf(pair.char1());
+        Predicate<String> filter = word -> word.contains(sequence1) || word.contains(sequence2);
+
+        addWordsWithFilter(resultSet, limit, filter);
+    }
+
+    /**
+     * 置換ミスと削除ミス、それぞれの傾向に対応した単語を探し、単語リストに格納するメソッド
+     * @param resultSet 見つけた単語を格納するSet
+     * @param limit Setに格納する単語数(多めにするために2倍して使用)
+     * @param chars 置換ミスか削除ミスが起きた文字
+     */
+    private void addWordsContainsChars(Set<String> resultSet, int limit, char... chars) {
+        Predicate<String> filter = word -> {
+            for (char c : chars) {
+                if (word.indexOf(c) == -1) {
+                    return false;
+                }
+            }
+            return true;
+        };
+
+        addWordsWithFilter(resultSet, limit, filter);
+    }
+
+    /**
+     * 各ミスの傾向に沿ったフィルターを使い単語を探して単語リストに格納するメソッド
+     * @param resultSet 探した単語を格納するSet
+     * @param limit Setに格納する単語数(多めにするために2倍して使用)
+     * @param filter 各ミスの傾向から適切な単語を決定する条件
+     */
+    private void addWordsWithFilter(Set<String> resultSet, int limit, Predicate<String> filter) {
+        List<String> foundWords = this.wordManager.getWords().stream()
+            .filter(filter)
+            .limit(limit * 2)
+            .toList();
+        int addCount = 0;
+        for (String foundWord : foundWords) {
+            if (addCount >= limit) {
+                break;
+            }
+            resultSet.add(foundWord);
+            addCount++;
+        }
+    }
+
+    /**
+     * ミスの頻度が多い単語リストを作るメソッド
+     * @param targetResult 全期間の結果のリスト
+     * @return 探した単語を格納したSet
+     */
+    private List<String> generateFrequentWords(List<TestResult> targetResult) {
+        Set<String> resultSet = new HashSet<>();
+
+        //選択した期間にミスがない場合ランダムな10個の単語を入れる
+        if (targetResult != null && !targetResult.isEmpty()) {
+            //テスト結果に保存されている各単語ごとにミスの回数をカウントしていく
+            resultSet = targetResult.stream()
+                .flatMap(testResult -> testResult.results().entrySet().stream())
+                .filter(entry -> !entry.getValue().isCorrect())
+                .map(Map.Entry::getKey)
+                .collect(Collectors.groupingBy(Function.identity(), Collectors.counting()))
+                //{間違えた単語, 間違えた回数}というMapを作る
+                .entrySet().stream()
+                .sorted(Map.Entry.<String, Long>comparingByValue().reversed())
+                .limit(AppConfig.PRACTICE_NUMBERS_OF_QUESTIONS)
+                .map(Map.Entry::getKey)
+                .collect(Collectors.toSet());
+        }
+        //テスト結果がnullまたは空の時、ミスした単語が10個に届かないときランダムな単語を加える
+        while (resultSet.size() < AppConfig.PRACTICE_NUMBERS_OF_QUESTIONS) {
+            resultSet.add(wordManager.getRandomWord());
+        }
+
+        List<String> wordList = new ArrayList<>(resultSet);
+
+        if (wordList.size() > AppConfig.PRACTICE_NUMBERS_OF_QUESTIONS) {
+            wordList.subList(0, AppConfig.PRACTICE_NUMBERS_OF_QUESTIONS);
+        }
+
+        return wordList;
+    }
+}
