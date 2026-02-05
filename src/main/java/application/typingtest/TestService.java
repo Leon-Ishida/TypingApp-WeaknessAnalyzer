@@ -2,7 +2,7 @@ package application.typingtest;
 
 import application.model.AppConfig;
 import application.model.TestResult;
-import application.result.ResultManager;
+import application.result.FileResultRepository;
 import application.service.UserDataManager;
 
 /**
@@ -10,7 +10,7 @@ import application.service.UserDataManager;
  */
 
 public class TestService {
-    private ResultManager resultManager = new ResultManager();
+    private FileResultRepository resultManager = new FileResultRepository();
     private TypingAnalyzer analyzer = new TypingAnalyzer();
 
     /**
@@ -34,7 +34,7 @@ public class TestService {
         TestResult finalResult = this.analyzer.analyze(rawResult, actualUsedTimeMillis);
 
         //jsonファイルに保存する
-        this.resultManager.saveResultToFile(finalResult);
+        this.resultManager.save(finalResult);
 
         //結果表示画面に即時反映させるためにUserDataManagerクラス内のフィールドを更新する
         UserDataManager.getInstance().refreshData();

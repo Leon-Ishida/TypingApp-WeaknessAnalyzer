@@ -18,11 +18,11 @@ import java.io.IOException;
  * 結果を保存するjsonファイル(typingApp_history.json)から結果を取得および保存をするクラス
  */
 
-public class ResultManager {
+public class FileResultRepository implements ResultRepository {
     private ObjectMapper mapper;
     final private String SAVE_FILE_PATH = System.getProperty("user.home") + File.separator + "typingApp_history.json"; //結果の保存先パス
 
-    public ResultManager() {
+    public FileResultRepository() {
         this.mapper = new ObjectMapper();
         this.mapper.registerModule(new JavaTimeModule());
         this.mapper.enable(SerializationFeature.INDENT_OUTPUT);
@@ -32,7 +32,8 @@ public class ResultManager {
      * 新しいテスト結果をjsonファイルに追記するメソッド
      * @param newResult 新しいテスト結果
      */
-    public void saveResultToFile(TestResult newResult) {
+    @Override
+    public void save(TestResult newResult) {
         try {
             File saveFile = new File(SAVE_FILE_PATH);
             ArrayList<TestResult> history;
@@ -59,7 +60,8 @@ public class ResultManager {
      * @return 全結果のリスト
      * ファイルが存在しない、または空の場合には空のリストを返す
      */
-    public List<TestResult> loadResultsFromFile() {
+    @Override
+    public List<TestResult> findAll() {
         try {
             File saveFile = new File(SAVE_FILE_PATH);
             if (saveFile.exists() && saveFile.length() > 0) {
