@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.YearMonth;
 import java.time.temporal.TemporalAdjusters;
 
@@ -18,13 +19,14 @@ import java.time.temporal.TemporalAdjusters;
 
 public class ResultFilter {
     /**
-     * 全テスト結果のリストを受け取り期間ごとに分類した結果オブジェクトを作る
+     * 全テスト結果のリストとテストを受けた日時を受け取り期間ごとに分類した結果オブジェクトを作る
      * <p>具体的には、「前回」「今日」「今週」「今月」「直近10回」のリストを作成し{@link application.model.FilteredResult}レコードとして返す</p>
      * @param allResults 全テスト結果のリスト
+     * @param now テスト日時
      * @return 各期間ごとに分類されたリストが格納されたFilteredResultオブジェクト
      * 引数のリストがnullまたは空の場合、すべてのリストが空のFilteredResultオブジェクトを返す
      */
-    public static FilteredResult filterAll(List<TestResult> allResults) {
+    public static FilteredResult filterAll(List<TestResult> allResults, LocalDateTime now) {
         //ガード節
         if (allResults == null || allResults.isEmpty()) {
             return new FilteredResult(null, Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList());
@@ -34,7 +36,7 @@ public class ResultFilter {
         List<TestResult> thisWeekResults = new ArrayList<>();
         List<TestResult> thisMonthResults = new ArrayList<>();
 
-        LocalDate today = LocalDate.now();
+        LocalDate today = now.toLocalDate();
         LocalDate firstOfWeek = today.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
         LocalDate lastOfWeek = today.with(TemporalAdjusters.nextOrSame(DayOfWeek.SUNDAY));
 
@@ -52,7 +54,7 @@ public class ResultFilter {
             }
 
             //今月の結果を取得
-            if (YearMonth.from(resultDate).equals(YearMonth.now())) {
+            if (YearMonth.from(resultDate).equals(YearMonth.from(today))) {
                 thisMonthResults.add(eachResult);
             }
         }
@@ -66,5 +68,14 @@ public class ResultFilter {
         TestResult lastResult = allResults.get(allResults.size() - 1);
     
         return new FilteredResult(lastResult, todayResults, thisWeekResults, thisMonthResults, allResults, recent10Results);
+    }
+
+    /**
+     * 現在の時刻を使ってフィルタリングする
+     * @param allResults 全テスト結果のリスト
+     * @return 各期間ごとに分類されたリストが格納されたFilteredResultオブジェクト
+     */
+    public static FilteredResult filterAll(List<TestResult> allResults) {
+        return filterAll(allResults, LocalDateTime.now());
     }
 }
