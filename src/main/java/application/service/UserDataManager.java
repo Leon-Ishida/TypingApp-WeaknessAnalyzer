@@ -36,8 +36,7 @@ public class UserDataManager {
      * 結果が保存されているファイルから全結果を取得し、フィルタをかける
      */
     private void loadAndFilterAllResults() {
-        FileResultRepository manager = new FileResultRepository();
-        this.allResults = manager.findAll();
+        this.allResults = this.repository.findAll();
 
         if (this.allResults != null && !this.allResults.isEmpty()) {
             this.filteredResult = ResultFilter.filterAll(allResults);
