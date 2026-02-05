@@ -19,10 +19,10 @@ import java.time.temporal.TemporalAdjusters;
 
 public class ResultFilter {
     /**
-     * 全テスト結果のリストとテストを受けた日時を受け取り期間ごとに分類した結果オブジェクトを作る
+     * 全テスト結果のリストと指定日時を受け取り、指定日時を今日として期間ごとに分類した結果オブジェクトを作る
      * <p>具体的には、「前回」「今日」「今週」「今月」「直近10回」のリストを作成し{@link application.model.FilteredResult}レコードとして返す</p>
      * @param allResults 全テスト結果のリスト
-     * @param now テスト日時
+     * @param now 期間を分類する指定日時
      * @return 各期間ごとに分類されたリストが格納されたFilteredResultオブジェクト
      * 引数のリストがnullまたは空の場合、すべてのリストが空のFilteredResultオブジェクトを返す
      */
@@ -71,7 +71,7 @@ public class ResultFilter {
     }
 
     /**
-     * 現在の時刻を使ってフィルタリングする
+     * 指定日時を現在の時刻としてフィルタリングする
      * @param allResults 全テスト結果のリスト
      * @return 各期間ごとに分類されたリストが格納されたFilteredResultオブジェクト
      */
