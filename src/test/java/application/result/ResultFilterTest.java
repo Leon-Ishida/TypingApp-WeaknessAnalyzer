@@ -37,4 +37,24 @@ public class ResultFilterTest {
         assertFalse(result.todayResults().contains(outsideFront));
         assertFalse(result.todayResults().contains(outsideBack));
     }
+
+    @Test
+    @DisplayName("今週のデータが正しく抽出されること")
+    void testFilterThisWeek() {
+        LocalDateTime fixedNow = LocalDateTime.of(2026, 2, 6, 12, 0);
+        
+        TestResult insideFront = createResult(LocalDateTime.of(2026, 2, 2, 0, 0, 0));
+        TestResult insideBack = createResult(LocalDateTime.of(2026, 2, 8, 23, 59, 59, 999));
+        TestResult outsideFront = createResult(LocalDateTime.of(2026, 2, 1, 23, 59, 59, 999));
+        TestResult outsideBack = createResult(LocalDateTime.of(2026, 2, 9, 0, 0, 0, 0));
+
+        List<TestResult> testList = Arrays.asList(insideFront, insideBack, outsideFront, outsideBack);
+
+        FilteredResult result = ResultFilter.filterAll(testList, fixedNow);
+
+        assertTrue(result.thisWeekResults().contains(insideFront));
+        assertTrue(result.thisWeekResults().contains(insideBack));
+        assertFalse(result.thisWeekResults().contains(outsideFront));
+        assertFalse(result.thisWeekResults().contains(outsideBack));
+    }
 }
