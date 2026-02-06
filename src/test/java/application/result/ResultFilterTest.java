@@ -14,15 +14,19 @@ import application.model.FilteredResult;
 import application.model.TestResult;
 
 public class ResultFilterTest {
+    private TestResult createResult(LocalDateTime time) {
+        return new TestResult(time, null, 0.0, 0.0);
+    }
+
     @Test
     @DisplayName("今日のデータが正しく抽出されること")
     void testFilterToday() {
         LocalDateTime fixedNow = LocalDateTime.of(2026, 2, 5, 12, 0);
 
-        TestResult insideFront = new TestResult(LocalDateTime.of(2026, 2, 5, 0, 0, 0, 0), null, 0.0, 0.0);
-        TestResult insideBack = new TestResult(LocalDateTime.of(2026, 2, 5, 23, 59, 59, 999), null, 0.0, 0.0);
-        TestResult outsideFront = new TestResult(LocalDateTime.of(2026, 2, 4, 23, 59, 59, 999), null, 0.0, 0.0);
-        TestResult outsideBack = new TestResult(LocalDateTime.of(2026, 2, 6, 0, 0, 0, 0), null, 0.0, 0.0);
+        TestResult insideFront = createResult(LocalDateTime.of(2026, 2, 5, 0, 0, 0, 0));
+        TestResult insideBack = createResult(LocalDateTime.of(2026, 2, 5, 23, 59, 59, 999));
+        TestResult outsideFront = createResult(LocalDateTime.of(2026, 2, 4, 23, 59, 59, 999));
+        TestResult outsideBack = createResult(LocalDateTime.of(2026, 2, 6, 0, 0, 0, 0));
 
         List<TestResult> testList = Arrays.asList(insideFront, insideBack, outsideFront, outsideBack);
         
