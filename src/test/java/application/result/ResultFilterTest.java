@@ -77,4 +77,26 @@ public class ResultFilterTest {
         assertFalse(result.thisMonthResults().contains(outsideFront));
         assertFalse(result.thisMonthResults().contains(outsideBack));
     }
+
+    @Test
+    @DisplayName("うるう年の2/29を含んだ週が正しく抽出されること")
+    void testFilterLeapYearWeek() {
+        LocalDateTime fixedNow = LocalDateTime.of(2024, 2, 29, 12, 0);
+
+        TestResult insideFront = createResult(LocalDateTime.of(2024, 2, 26, 0, 0, 0, 0));
+        TestResult insideCenter = createResult(LocalDateTime.of(2024, 3, 1, 12, 0));
+        TestResult insideBack = createResult(LocalDateTime.of(2024, 3, 3, 23, 59, 59, 999));
+        TestResult outsideFront = createResult(LocalDateTime.of(2024, 2, 25, 23, 59, 59, 999));
+        TestResult outsideBack = createResult(LocalDateTime.of(2024, 3, 4, 0, 0, 0, 0));
+
+        List<TestResult> testList = Arrays.asList(insideFront, insideCenter, insideBack, outsideFront, outsideBack);
+
+        FilteredResult result = ResultFilter.filterAll(testList, fixedNow);
+
+        assertTrue(result.thisWeekResults().contains(insideFront));
+        assertTrue(result.thisWeekResults().contains(insideCenter));
+        assertTrue(result.thisWeekResults().contains(insideBack));
+        assertFalse(result.thisWeekResults().contains(outsideFront));
+        assertFalse(result.thisWeekResults().contains(outsideBack));
+    }
 }
