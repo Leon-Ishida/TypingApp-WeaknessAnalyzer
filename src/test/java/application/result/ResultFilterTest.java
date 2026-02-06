@@ -1,10 +1,13 @@
 package application.result;
 
+import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import java.time.LocalDateTime;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import org.junit.jupiter.api.DisplayName;
@@ -118,5 +121,30 @@ public class ResultFilterTest {
         assertTrue(result.thisMonthResults().contains(insideBack));
         assertFalse(result.thisMonthResults().contains(outsideFront));
         assertFalse(result.thisMonthResults().contains(outsideBack));
+    }
+
+    @Test
+    @DisplayName("入力がnullまたは空リストの場合、結果も空になること")
+    void testNonOrNullData() {
+        FilteredResult resultFromNull = ResultFilter.filterAll(null);
+
+        assertAll("Null入力時の全フィールド検証",
+            () -> assertNull(resultFromNull.lastResult(), "直近の結果はnullであるべき"),
+            () -> assertTrue(resultFromNull.todayResults().isEmpty(), "今日のリストは空であるべき"),
+            () -> assertTrue(resultFromNull.thisWeekResults().isEmpty(), "今週のリストは空であるべき"),
+            () -> assertTrue(resultFromNull.thisMonthResults().isEmpty(), "今月のリストは空であるべき"),
+            () -> assertTrue(resultFromNull.allResults().isEmpty(), "全結果リストは空であるべき"),
+            () -> assertTrue(resultFromNull.recent10Results().isEmpty(), "直近10回のリストは空であるべき")
+        );
+
+        FilteredResult resultEmpty = ResultFilter.filterAll(Collections.emptyList());
+        assertAll("空リスト入力時の全フィールド検証",
+            () -> assertNull(resultEmpty.lastResult(), "直近の結果はnullであるべき"),
+            () -> assertTrue(resultEmpty.todayResults().isEmpty(), "今日のリストは空であるべき"),
+            () -> assertTrue(resultEmpty.thisWeekResults().isEmpty(), "今週のリストは空であるべき"),
+            () -> assertTrue(resultEmpty.thisMonthResults().isEmpty(), "今月のリストは空であるべき"),
+            () -> assertTrue(resultEmpty.allResults().isEmpty(), "全結果リストは空であるべき"),
+            () -> assertTrue(resultEmpty.recent10Results().isEmpty(), "直近10回のリストは空であるべき")
+        );
     }
 }
