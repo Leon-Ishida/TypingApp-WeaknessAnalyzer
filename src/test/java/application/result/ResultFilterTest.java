@@ -35,10 +35,13 @@ public class ResultFilterTest {
         
         FilteredResult result = ResultFilter.filterAll(testList, fixedNow);
 
-        assertTrue(result.todayResults().contains(insideFront));
-        assertTrue(result.todayResults().contains(insideBack));
-        assertFalse(result.todayResults().contains(outsideFront));
-        assertFalse(result.todayResults().contains(outsideBack));
+        assertAll("今日のデータの境界値検証",
+            () -> assertTrue(result.todayResults().contains(insideFront), "日初めが含まれるべき"),
+            () -> assertTrue(result.todayResults().contains(insideBack), "日末が含まれるべき"),
+            () -> assertFalse(result.todayResults().contains(outsideFront), "昨日末が含まれないべき"),
+            () -> assertFalse(result.todayResults().contains(outsideBack), "翌日初めが含まれないべき")
+        );
+
     }
 
     @Test
@@ -55,10 +58,12 @@ public class ResultFilterTest {
 
         FilteredResult result = ResultFilter.filterAll(testList, fixedNow);
 
-        assertTrue(result.thisWeekResults().contains(insideFront));
-        assertTrue(result.thisWeekResults().contains(insideBack));
-        assertFalse(result.thisWeekResults().contains(outsideFront));
-        assertFalse(result.thisWeekResults().contains(outsideBack));
+        assertAll("今週のデータの境界値検証",
+            () -> assertTrue(result.thisWeekResults().contains(insideFront), "今週初めが含まれるべき"),
+            () -> assertTrue(result.thisWeekResults().contains(insideBack), "今週末が含まれるべき"),
+            () -> assertFalse(result.thisWeekResults().contains(outsideFront), "先週末が含まれないべき"),
+            () -> assertFalse(result.thisWeekResults().contains(outsideBack), "翌週初めが含まれないべき")
+        );
     }
 
     @Test
@@ -75,10 +80,13 @@ public class ResultFilterTest {
 
         FilteredResult result = ResultFilter.filterAll(testList, fixedNow);
 
-        assertTrue(result.thisMonthResults().contains(insideFront));
-        assertTrue(result.thisMonthResults().contains(insideBack));
-        assertFalse(result.thisMonthResults().contains(outsideFront));
-        assertFalse(result.thisMonthResults().contains(outsideBack));
+        assertAll("今月のデータの境界値検証", 
+            () -> assertTrue(result.thisMonthResults().contains(insideFront), "今月初めは含まれるべき"),
+            () -> assertTrue(result.thisMonthResults().contains(insideBack), "今月末は含まれるべき"),
+            () -> assertFalse(result.thisMonthResults().contains(outsideFront), "先月末は含まれないべき"),
+            () -> assertFalse(result.thisMonthResults().contains(outsideBack), "翌月初めは含まれないべき")
+        );
+        
     }
 
     @Test
@@ -96,11 +104,13 @@ public class ResultFilterTest {
 
         FilteredResult result = ResultFilter.filterAll(testList, fixedNow);
 
-        assertTrue(result.thisWeekResults().contains(insideFront));
-        assertTrue(result.thisWeekResults().contains(insideCenter));
-        assertTrue(result.thisWeekResults().contains(insideBack));
-        assertFalse(result.thisWeekResults().contains(outsideFront));
-        assertFalse(result.thisWeekResults().contains(outsideBack));
+        assertAll("うるう年の今週のデータの境界値検証",
+            () -> assertTrue(result.thisWeekResults().contains(insideFront), "今週初めが含まれるべき"),
+            () -> assertTrue(result.thisWeekResults().contains(insideCenter), "月が変わっても含まれるべき"),
+            () -> assertTrue(result.thisWeekResults().contains(insideBack), "今週末が含まれるべき"),
+            () -> assertFalse(result.thisWeekResults().contains(outsideFront), "先週末が含まれないべき"),
+            () -> assertFalse(result.thisWeekResults().contains(outsideBack), "翌週初めが含まれないべき")
+        );
     }
 
     @Test
@@ -117,10 +127,12 @@ public class ResultFilterTest {
 
         FilteredResult result = ResultFilter.filterAll(testList, fixedNow);
 
-        assertTrue(result.thisMonthResults().contains(insideFront));
-        assertTrue(result.thisMonthResults().contains(insideBack));
-        assertFalse(result.thisMonthResults().contains(outsideFront));
-        assertFalse(result.thisMonthResults().contains(outsideBack));
+        assertAll("うるう年の今月のデータの境界値検証", 
+            () -> assertTrue(result.thisMonthResults().contains(insideFront), "今月初めは含まれるべき"),
+            () -> assertTrue(result.thisMonthResults().contains(insideBack), "今月末は含まれるべき"),
+            () -> assertFalse(result.thisMonthResults().contains(outsideFront), "先月末は含まれないべき"),
+            () -> assertFalse(result.thisMonthResults().contains(outsideBack), "翌月初めは含まれないべき")
+        );
     }
 
     @Test
