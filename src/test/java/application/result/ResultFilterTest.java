@@ -4,8 +4,10 @@ import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -157,6 +159,35 @@ public class ResultFilterTest {
             () -> assertTrue(resultEmpty.thisMonthResults().isEmpty(), "今月のリストは空であるべき"),
             () -> assertTrue(resultEmpty.allResults().isEmpty(), "全結果リストは空であるべき"),
             () -> assertTrue(resultEmpty.recent10Results().isEmpty(), "直近10回のリストは空であるべき")
+        );
+    }
+
+    @Test
+    @DisplayName("データ件数に応じた直近10回のデータ抽出と最新結果の取得が正しく行われること")
+    void testRecent10AndLastResult() {
+        LocalDateTime now = LocalDateTime.now();
+
+        List<TestResult> smallList = new ArrayList<>();
+        for (int i = 0; i < 5; i++) {
+            smallList.add(new TestResult(now, null, (i + 1) * 1.0, 0.0));
+        }
+        FilteredResult smallResult = ResultFilter.filterAll(smallList);
+        assertAll("データが10件未満の場合の検証",
+            () -> assertEquals(5, smallResult.recent10Results().size(), "5件すべてが返されるべき"),
+            () -> assertEquals(1.0, smallResult.recent10Results().get(0).wpm(), "リストの先頭は1件目であるべき"),
+            () -> assertEquals(5.0, smallResult.lastResult().wpm(), "直近は5件目であるべき")
+        );
+
+        List<TestResult> largeList = new ArrayList<>();
+        for (int i = 0; i < 15; i++) {
+            largeList.add(new TestResult(now, null, (i + 1) * 1.0, 0.0));
+        }
+        FilteredResult largeResult = ResultFilter.filterAll(largeList);
+        assertAll("データが10件以上の場合の検証",
+            () -> assertEquals(10, largeResult.recent10Results().size(), "10件に削減されていなければならない"),
+            () -> assertEquals(6.0, largeResult.recent10Results().get(0).wpm(), "リストの先頭は6件目であるべき"),
+            () -> assertEquals(15.0, largeResult.recent10Results().get(9).wpm(), "リストの末尾は15件目であるべき"),
+            () -> assertEquals(15.0, largeResult.lastResult().wpm(), "直近は15件目であるべき")
         );
     }
 }
