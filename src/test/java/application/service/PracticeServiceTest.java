@@ -2,7 +2,6 @@ package application.service;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
 
@@ -48,24 +47,25 @@ public class PracticeServiceTest {
     @Test
     @DisplayName("置換ミス: aとsが連続する単語を抽出")
     void weaknessWordsSubstitution() {
-        List<String> mockDictionary = List.of("assert", "sample", "apple", "sun", "book");
+        List<String> mockDictionary = List.of(
+            "assert", "sample", "sat", "as", "assemble", "save", "apple", "sun", "book"
+        );
         when(mockWordManager.getWords()).thenReturn(mockDictionary);
         when(mockWordManager.getRandomWord()).thenReturn(
             "dummy1", "dummy2", "dummy3", "dummy4", "dummy5",
             "dummy7", "dummy8", "dummy9", "dummy10", "dummy11"
         );
+
         List<TestResult> results = createSubstitutionMistake('a', 's');
         PracticeWords result = practiceService.generatePracticeWords(results);
         List<String> weaknessWords = result.weaknessWords();
+        List<String> removeDummy = weaknessWords.stream().filter(s -> !s.startsWith("dummy")).toList();
+
         assertAll("弱点克服用練習単語の検証(置換ミス)",
-            () -> assertTrue(weaknessWords.contains("assert"), "assertが含まれること"),
-            () -> assertTrue(weaknessWords.contains("sample"), "sampleが含まれること"),
-            () -> assertFalse(weaknessWords.contains("apple"), "appleが含まれないこと"),
-            () -> assertFalse(weaknessWords.contains("sun"), "sunを含まないこと"),
-            () -> assertFalse(weaknessWords.contains("book"), "bookが含まれないこと"),
+            () -> assertEquals(3, removeDummy.size(), "置換ミス練習単語は3個であること"),
+            () -> assertTrue(removeDummy.stream().allMatch(s -> s.contains("a") && s.contains("s")), "置換ミス練習単語にはaとsが含まれるべき"),
             () -> assertEquals(10, weaknessWords.size(), "合計10個であること")
         );
-
     }
 
     private List<TestResult> createSubstitutionMistake(char a1, char a2) {
