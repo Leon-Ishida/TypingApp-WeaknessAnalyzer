@@ -9,14 +9,11 @@ import java.time.LocalDateTime;
 import java.util.LinkedHashMap;
 import java.util.List;
 
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import application.model.MistakeDetail;
@@ -29,20 +26,9 @@ import application.model.WordResult;
 public class PracticeServiceTest {
     @Mock
     private WordManager mockWordManager;
-    private AutoCloseable closeable;
 
     @InjectMocks
     private PracticeService practiceService;
-
-    @BeforeEach
-    void initService() {
-        closeable = MockitoAnnotations.openMocks(this);
-    }
-
-    @AfterEach
-    void closeService() throws Exception{
-        closeable.close();
-    }
 
     @Test
     @DisplayName("置換ミス: aとsが連続する単語を抽出")
@@ -53,7 +39,10 @@ public class PracticeServiceTest {
         when(mockWordManager.getWords()).thenReturn(mockDictionary);
         when(mockWordManager.getRandomWord()).thenReturn(
             "dummy1", "dummy2", "dummy3", "dummy4", "dummy5",
-            "dummy7", "dummy8", "dummy9", "dummy10", "dummy11"
+            "dummy7", "dummy8", "dummy9", "dummy10",
+            "dummy11", "dummy12", "dummy13", "dummy14", "dummy15",
+            "dummy16", "dummy17", "dummy18", "dummy19", "dummy20",
+            "dummy21", "dummy22", "dummy23", "dummy24", "dummy25"
         );
 
         List<TestResult> results = createSubstitutionMistake('a', 's');
