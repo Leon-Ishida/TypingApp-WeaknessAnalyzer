@@ -70,6 +70,21 @@ public class PracticeServiceTest {
         );
     }
 
+    @Test
+    @DisplayName("削除ミス: aが含まれる単語を抽出")
+    void weaknessWordsDeletion() {
+        List<TestResult> results = createDeletionMistake('a');
+        PracticeWords result = practiceService.generatePracticeWords(results);
+        List<String> weaknessWords = result.weaknessWords();
+        List<String> removeDummy = weaknessWords.stream().filter(s -> !s.startsWith("dummy")).toList();
+
+        assertAll("弱点克服用練習単語の検証(削除ミス)",
+            () -> assertEquals(3, removeDummy.size(), "削除ミス練習単語は3個であること"),
+            () -> assertTrue(removeDummy.stream().allMatch(s -> s.contains("a")), "削除ミス練習単語にはaが含まれるべき"),
+            () -> assertEquals(10, weaknessWords.size(), "合計10個であること")
+        );
+    }
+
     private List<TestResult> createSubstitutionMistake(char a1, char a2) {
         WordResult testWordResult = new WordResult("testWord", List.of(new MistakeDetail(MistakeType.SUBSTITUTION, a1, a2, '\0', 0)));
         LinkedHashMap<String, WordResult> testResults = new LinkedHashMap<>();
@@ -80,6 +95,14 @@ public class PracticeServiceTest {
 
     private List<TestResult> createTranspositionMistake(char a1, char a2) {
         WordResult testWordResult = new WordResult("testWord", List.of(new MistakeDetail(MistakeType.TRANSPOSITION, a1, a2, '\0', 0)));
+        LinkedHashMap<String, WordResult> testResults = new LinkedHashMap<>();
+        testResults.put("testWord", testWordResult);
+        TestResult testResult = new TestResult(LocalDateTime.now(), testResults, 0.0, 0.0);
+        return List.of(testResult);
+    }
+
+    private List<TestResult> createDeletionMistake(char a1) {
+        WordResult testWordResult = new WordResult("testWord", List.of(new MistakeDetail(MistakeType.DELETION, a1, '\0', '\0', 0)));
         LinkedHashMap<String, WordResult> testResults = new LinkedHashMap<>();
         testResults.put("testWord", testWordResult);
         TestResult testResult = new TestResult(LocalDateTime.now(), testResults, 0.0, 0.0);
