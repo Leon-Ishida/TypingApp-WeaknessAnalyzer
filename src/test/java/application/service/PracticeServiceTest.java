@@ -9,6 +9,7 @@ import java.time.LocalDateTime;
 import java.util.LinkedHashMap;
 import java.util.List;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -30,21 +31,18 @@ public class PracticeServiceTest {
     @InjectMocks
     private PracticeService practiceService;
 
+    private final List<String> mockDictionary = List.of(
+            "assert", "sample", "sat", "as", "assemble", "save", "apple", "sun", "book"
+    );
+
+    @BeforeEach
+    void setup() {
+        setupMockWordManager(mockDictionary);
+    }
+
     @Test
     @DisplayName("置換ミス: aとsがどちらも存在する単語を抽出")
     void weaknessWordsSubstitution() {
-        List<String> mockDictionary = List.of(
-            "assert", "sample", "sat", "as", "assemble", "save", "apple", "sun", "book"
-        );
-        when(mockWordManager.getWords()).thenReturn(mockDictionary);
-        when(mockWordManager.getRandomWord()).thenReturn(
-            "dummy1", "dummy2", "dummy3", "dummy4", "dummy5",
-            "dummy6", "dummy7", "dummy8", "dummy9", "dummy10",
-            "dummy11", "dummy12", "dummy13", "dummy14", "dummy15",
-            "dummy16", "dummy17", "dummy18", "dummy19", "dummy20",
-            "dummy21", "dummy22", "dummy23", "dummy24", "dummy25"
-        );
-
         List<TestResult> results = createSubstitutionMistake('a', 's');
         PracticeWords result = practiceService.generatePracticeWords(results);
         List<String> weaknessWords = result.weaknessWords();
@@ -60,18 +58,6 @@ public class PracticeServiceTest {
     @Test
     @DisplayName("交換ミス: aとsが順不同で連続する単語を抽出")
     void weaknessWordsTransposition() {
-        List<String> mockDictionary = List.of(
-            "assert", "sample", "sat", "as", "assemble", "save", "apple", "sun", "book"
-        );
-        when(mockWordManager.getWords()).thenReturn(mockDictionary);
-        when(mockWordManager.getRandomWord()).thenReturn(
-            "dummy1", "dummy2", "dummy3", "dummy4", "dummy5",
-            "dummy6", "dummy7", "dummy8", "dummy9", "dummy10",
-            "dummy11", "dummy12", "dummy13", "dummy14", "dummy15",
-            "dummy16", "dummy17", "dummy18", "dummy19", "dummy20",
-            "dummy21", "dummy22", "dummy23", "dummy24", "dummy25"
-        );
-
         List<TestResult> results = createTranspositionMistake('a', 's');
         PracticeWords result = practiceService.generatePracticeWords(results);
         List<String> weaknessWords = result.weaknessWords();
@@ -98,5 +84,16 @@ public class PracticeServiceTest {
         testResults.put("testWord", testWordResult);
         TestResult testResult = new TestResult(LocalDateTime.now(), testResults, 0.0, 0.0);
         return List.of(testResult);
+    }
+
+    private void setupMockWordManager(List<String> dictionary) {
+        when(mockWordManager.getWords()).thenReturn(dictionary);
+        when(mockWordManager.getRandomWord()).thenReturn(
+            "dummy1", "dummy2", "dummy3", "dummy4", "dummy5",
+            "dummy6", "dummy7", "dummy8", "dummy9", "dummy10",
+            "dummy11", "dummy12", "dummy13", "dummy14", "dummy15",
+            "dummy16", "dummy17", "dummy18", "dummy19", "dummy20",
+            "dummy21", "dummy22", "dummy23", "dummy24", "dummy25"
+        );
     }
 }
