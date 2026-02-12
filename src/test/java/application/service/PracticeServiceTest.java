@@ -81,36 +81,41 @@ public class PracticeServiceTest {
     }
 
     @Test
-    @DisplayName("挿入ミス: 挿入した文字の前後が連続する単語を抽出")
-    void weaknessWordInsertion() {
-        //先頭に挿入したときのテスト
-        List<String> weaknessWords_first = setupWeaknessWords(createInsertionMistake('\0', 'a', 't'));
-        List<String> removeDummy_first = removeDummy(weaknessWords_first);
+    @DisplayName("先頭での挿入ミス: 単語の先頭の文字が同じな単語を抽出")
+    void weaknessWordInsertionFirst() {
+        List<String> weaknessWordsFirst = setupWeaknessWords(createInsertionMistake('\0', 'a', 't'));
+        List<String> removeDummyFirst = removeDummy(weaknessWordsFirst);
 
         assertAll("弱点克服用練習単語の検証(先頭での挿入ミス)",
-            () -> assertEquals(3, removeDummy_first.size(), "挿入ミス練習単語は3個であること"),
-            () -> assertTrue(removeDummy_first.stream().allMatch(s -> s.startsWith("a")), "挿入ミス練習単語はaから始まるべき"),
-            () -> assertEquals(10, weaknessWords_first.size(), "合計10個であること")
+            () -> assertEquals(3, removeDummyFirst.size(), "挿入ミス練習単語は3個であること"),
+            () -> assertTrue(removeDummyFirst.stream().allMatch(s -> s.startsWith("a")), "挿入ミス練習単語はaから始まるべき"),
+            () -> assertEquals(10, weaknessWordsFirst.size(), "合計10個であること")
         );
+    }
 
-        //文字と文字の間に挿入したときのテスト
-        List<String> weaknessWords_middle = setupWeaknessWords(createInsertionMistake('a', 's', 't'));
-        List<String> removeDummy_middle = removeDummy(weaknessWords_middle);
+    @Test
+    @DisplayName("文中での挿入ミス: 挿入した文字の前後が連続する単語を抽出")
+    void weaknessWordInsertionMiddle() {
+        List<String> weaknessWordsMiddle = setupWeaknessWords(createInsertionMistake('a', 's', 't'));
+        List<String> removeDummyMiddle = removeDummy(weaknessWordsMiddle);
 
         assertAll("弱点克服用練習単語の検証(文中での挿入ミス)",
-            () -> assertEquals(3, removeDummy_middle.size(), "挿入ミス練習単語は3個であること"),
-            () -> assertTrue(removeDummy_middle.stream().allMatch(s -> s.contains("as")), "挿入ミス練習単語にasが含まれること"),
-            () -> assertEquals(10, weaknessWords_middle.size(), "合計10個であること")
+            () -> assertEquals(3, removeDummyMiddle.size(), "挿入ミス練習単語は3個であること"),
+            () -> assertTrue(removeDummyMiddle.stream().allMatch(s -> s.contains("as")), "挿入ミス練習単語にasが含まれること"),
+            () -> assertEquals(10, weaknessWordsMiddle.size(), "合計10個であること")
         );
+    }
 
-        //最後に挿入したときのテスト
-        List<String> weaknessWords_last = setupWeaknessWords(createInsertionMistake('e', '\0', 't'));
-        List<String> removeDummy_last = removeDummy(weaknessWords_last);
+    @Test
+    @DisplayName("末尾での挿入ミス: 単語の末尾の文字が同じな単語を抽出")
+    void weaknessWordInsertionLast() {
+        List<String> weaknessWordsLast = setupWeaknessWords(createInsertionMistake('e', '\0', 't'));
+        List<String> removeDummyLast = removeDummy(weaknessWordsLast);
 
         assertAll("弱点克服用練習単語の検証(末端での挿入ミス)",
-            () -> assertEquals(3, removeDummy_last.size(), "挿入ミス練習単語は3個であること"),
-            () -> assertTrue(removeDummy_last.stream().allMatch(s -> s.endsWith("e")), "挿入ミス練習単語の末尾がeであること"),
-            () -> assertEquals(10, weaknessWords_last.size(), "合計10個であること")
+            () -> assertEquals(3, removeDummyLast.size(), "挿入ミス練習単語は3個であること"),
+            () -> assertTrue(removeDummyLast.stream().allMatch(s -> s.endsWith("e")), "挿入ミス練習単語の末尾がeであること"),
+            () -> assertEquals(10, weaknessWordsLast.size(), "合計10個であること")
         );
     }
 
