@@ -8,6 +8,7 @@ import static org.mockito.Mockito.when;
 import java.time.LocalDateTime;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -32,7 +33,7 @@ public class PracticeServiceTest {
     private PracticeService practiceService;
 
     private final List<String> mockDictionary = List.of(
-            "assert", "sample", "sat", "as", "assemble", "save", "apple", "sun", "book"
+            "assert", "sample", "sat", "as", "assemble", "save", "apple", "sun", "book", "appart"
     );
 
     @BeforeEach
@@ -79,6 +80,40 @@ public class PracticeServiceTest {
         );
     }
 
+    @Test
+    @DisplayName("挿入ミス: 挿入した文字の前後が連続する単語を抽出")
+    void weaknessWordInsertion() {
+        //先頭に挿入したときのテスト
+        List<String> weaknessWords_first = setupWeaknessWords(createInsertionMistake('\0', 'a', 't'));
+        List<String> removeDummy_first = removeDummy(weaknessWords_first);
+
+        assertAll("弱点克服用練習単語の検証(先頭での挿入ミス)",
+            () -> assertEquals(3, removeDummy_first.size(), "挿入ミス練習単語は3個であること"),
+            () -> assertTrue(removeDummy_first.stream().allMatch(s -> s.startsWith("a")), "挿入ミス練習単語はaから始まるべき"),
+            () -> assertEquals(10, weaknessWords_first.size(), "合計10個であること")
+        );
+
+        //文字と文字の間に挿入したときのテスト
+        List<String> weaknessWords_middle = setupWeaknessWords(createInsertionMistake('a', 's', 't'));
+        List<String> removeDummy_middle = removeDummy(weaknessWords_middle);
+
+        assertAll("弱点克服用練習単語の検証(文中での挿入ミス)",
+            () -> assertEquals(3, removeDummy_middle.size(), "挿入ミス練習単語は3個であること"),
+            () -> assertTrue(removeDummy_middle.stream().allMatch(s -> s.contains("as")), "挿入ミス練習単語にasが含まれること"),
+            () -> assertEquals(10, weaknessWords_middle.size(), "合計10個であること")
+        );
+
+        //最後に挿入したときのテスト
+        List<String> weaknessWords_last = setupWeaknessWords(createInsertionMistake('e', '\0', 't'));
+        List<String> removeDummy_last = removeDummy(weaknessWords_last);
+
+        assertAll("弱点克服用練習単語の検証(末端での挿入ミス)",
+            () -> assertEquals(3, removeDummy_last.size(), "挿入ミス練習単語は3個であること"),
+            () -> assertTrue(removeDummy_last.stream().allMatch(s -> s.endsWith("e")), "挿入ミス練習単語の末尾がeであること"),
+            () -> assertEquals(10, weaknessWords_last.size(), "合計10個であること")
+        );
+    }
+
     private List<TestResult> createSubstitutionMistake(char a1, char a2) {
         WordResult testWordResult = new WordResult("testWord", List.of(new MistakeDetail(MistakeType.SUBSTITUTION, a1, a2, '\0', 0)));
         LinkedHashMap<String, WordResult> testResults = new LinkedHashMap<>();
@@ -103,15 +138,18 @@ public class PracticeServiceTest {
         return List.of(testResult);
     }
 
+    private List<TestResult> createInsertionMistake(char beforeChar, char afterChar, char insertionChar) {
+        WordResult testWordResult = new WordResult("testWord", List.of(new MistakeDetail(MistakeType.INSERTION, beforeChar, afterChar, insertionChar, 0)));
+        LinkedHashMap<String, WordResult> testResults = new LinkedHashMap<>();
+        testResults.put("testWord", testWordResult);
+        TestResult testResult = new TestResult(LocalDateTime.now(), testResults, 0.0, 0.0);
+        return List.of(testResult);
+    }
+
     private void setupMockWordManager(List<String> dictionary) {
         when(mockWordManager.getWords()).thenReturn(dictionary);
-        when(mockWordManager.getRandomWord()).thenReturn(
-            "dummy1", "dummy2", "dummy3", "dummy4", "dummy5",
-            "dummy6", "dummy7", "dummy8", "dummy9", "dummy10",
-            "dummy11", "dummy12", "dummy13", "dummy14", "dummy15",
-            "dummy16", "dummy17", "dummy18", "dummy19", "dummy20",
-            "dummy21", "dummy22", "dummy23", "dummy24", "dummy25"
-        );
+        AtomicInteger counter = new AtomicInteger(1);
+        when(mockWordManager.getRandomWord()).thenAnswer(inv -> "dummy" + counter.getAndIncrement());
     }
 
     private List<String> setupWeaknessWords(List<TestResult> results) {
