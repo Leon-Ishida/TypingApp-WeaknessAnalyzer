@@ -43,10 +43,8 @@ public class PracticeServiceTest {
     @Test
     @DisplayName("置換ミス: aとsがどちらも存在する単語を抽出")
     void weaknessWordsSubstitution() {
-        List<TestResult> results = createSubstitutionMistake('a', 's');
-        PracticeWords result = practiceService.generatePracticeWords(results);
-        List<String> weaknessWords = result.weaknessWords();
-        List<String> removeDummy = weaknessWords.stream().filter(s -> !s.startsWith("dummy")).toList();
+        List<String> weaknessWords = setupWeaknessWords(createSubstitutionMistake('a', 's'));
+        List<String> removeDummy = removeDummy(weaknessWords);
 
         assertAll("弱点克服用練習単語の検証(置換ミス)",
             () -> assertEquals(3, removeDummy.size(), "置換ミス練習単語は3個であること"),
@@ -58,10 +56,8 @@ public class PracticeServiceTest {
     @Test
     @DisplayName("交換ミス: aとsが順不同で連続する単語を抽出")
     void weaknessWordsTransposition() {
-        List<TestResult> results = createTranspositionMistake('a', 's');
-        PracticeWords result = practiceService.generatePracticeWords(results);
-        List<String> weaknessWords = result.weaknessWords();
-        List<String> removeDummy = weaknessWords.stream().filter(s -> !s.startsWith("dummy")).toList();
+        List<String> weaknessWords = setupWeaknessWords(createTranspositionMistake('a', 's'));
+        List<String> removeDummy = removeDummy(weaknessWords);
 
         assertAll("弱点克服用練習単語の検証(交換ミス)",
             () -> assertEquals(3, removeDummy.size(), "交換ミス練習単語は3個であること"),
@@ -73,10 +69,8 @@ public class PracticeServiceTest {
     @Test
     @DisplayName("削除ミス: aが含まれる単語を抽出")
     void weaknessWordsDeletion() {
-        List<TestResult> results = createDeletionMistake('a');
-        PracticeWords result = practiceService.generatePracticeWords(results);
-        List<String> weaknessWords = result.weaknessWords();
-        List<String> removeDummy = weaknessWords.stream().filter(s -> !s.startsWith("dummy")).toList();
+        List<String> weaknessWords = setupWeaknessWords(createDeletionMistake('a'));
+        List<String> removeDummy = removeDummy(weaknessWords);
 
         assertAll("弱点克服用練習単語の検証(削除ミス)",
             () -> assertEquals(3, removeDummy.size(), "削除ミス練習単語は3個であること"),
@@ -118,5 +112,15 @@ public class PracticeServiceTest {
             "dummy16", "dummy17", "dummy18", "dummy19", "dummy20",
             "dummy21", "dummy22", "dummy23", "dummy24", "dummy25"
         );
+    }
+
+    private List<String> setupWeaknessWords(List<TestResult> results) {
+        PracticeWords result = practiceService.generatePracticeWords(results);
+        List<String> weaknessWords = result.weaknessWords();
+        return weaknessWords;
+    }
+
+    private List<String> removeDummy(List<String> weaknessWords) {
+        return weaknessWords.stream().filter(s -> !s.startsWith("dummy")).toList();
     }
 }
