@@ -124,15 +124,15 @@ public class PracticeServiceTest {
     @DisplayName("複合ミス: 置換と交換が混在する場合、両方の弱点単語が重複なく抽出されること")
     void weaknessWordComposite() {
         List<String> mockDictionaryComposite = List.of(
-            "sub_answer", "sub_shiftamount",
-            "trans_ask", "trans_sat",
-            "both_sats",
+            "sub_xy_1", "sub_yx_2",
+            "trans_as_1", "trans_sa_2",
+            "both_xy_sa",
             "trans_extra_as"
         );
         when(mockWordManager.getWords()).thenReturn(mockDictionaryComposite);
 
         List<TestResult> compositeResults = new ArrayList<>();
-        compositeResults.addAll(createSubstitutionMistake('a', 's'));
+        compositeResults.addAll(createSubstitutionMistake('x', 'y'));
         compositeResults.addAll(createTranspositionMistake('a', 's'));
         List<String> weaknessWords = setupWeaknessWords(compositeResults);
         List<String> removeDummy = removeDummy(weaknessWords);
