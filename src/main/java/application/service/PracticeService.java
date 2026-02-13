@@ -172,17 +172,12 @@ public class PracticeService {
      */
     private void addWordsWithFilter(Set<String> resultSet, int limit, Predicate<String> filter) {
         List<String> foundWords = this.wordManager.getWords().stream()
-            .filter(filter)
-            .limit(limit * 2)
-            .toList();
-        int addCount = 0;
-        for (String foundWord : foundWords) {
-            if (addCount >= limit) {
-                break;
-            }
-            resultSet.add(foundWord);
-            addCount++;
-        }
+            .filter(filter.and(word -> !resultSet.contains(word)))
+            .collect(Collectors.toList());
+        Collections.shuffle(foundWords);
+        foundWords.stream()
+            .limit(limit)
+            .forEach(resultSet::add);
     }
 
     /**
