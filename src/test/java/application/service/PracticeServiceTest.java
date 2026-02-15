@@ -148,7 +148,7 @@ public class PracticeServiceTest {
 
     @Test
     @DisplayName("弱点克服練習単語は10件でなければならない")
-    void testWordsSize() {
+    void testWeaknessWordsSize() {
         //練習単語が10件に満たない場合
         List<String> mockDictUnderTen = new ArrayList<>();
         for (int i = 0; i < 5; i++) {
@@ -185,6 +185,30 @@ public class PracticeServiceTest {
         assertAll("弱点克服練習単語のサイズ検証(10件より多い場合)",
             () -> assertEquals(10, removeDummyWordsOverTen.size(), "弱点克服単語リストにはダミーは含まれていてはならない"),
             () -> assertEquals(10, weaknessWordsOverTen.size(), "弱点克服単語は合計10件であること")
+        );
+    }
+
+    @Test
+    @DisplayName("頻出ミス単語は10件でなければならない")
+    void testFrequentWordsSize() {
+        //頻出ミスが10件に満たない場合
+        List<TestResult> resultsUnderTen = createFrequentMistake(5);
+        List<String> frequentWordsUnderTen = setupFrequentWords(resultsUnderTen);
+        List<String> removeDummyWordsUnderTen = removeDummy(frequentWordsUnderTen);
+
+        assertAll("頻出ミス単語のサイズ検証(10件に満たない場合)",
+            () -> assertEquals(5, removeDummyWordsUnderTen.size(), "頻出ミス単語リストにダミーは5個であるべき"),
+            () -> assertEquals(10, frequentWordsUnderTen.size(), "頻出ミス単語リストは10件であること")
+        );
+
+        //頻出ミスが10件より多い場合
+        List<TestResult> resultsOverTen = createFrequentMistake(15);
+        List<String> frequentWordsOverTen = setupFrequentWords(resultsOverTen);
+        List<String> removeDummyWordsOverTen = removeDummy(frequentWordsOverTen);
+
+        assertAll("頻出ミス単語のサイズ検証(10件より多い場合)",
+            () -> assertEquals(10, removeDummyWordsOverTen.size(), "頻出ミス単語リストにダミーは含まれてはならない"),
+            () -> assertEquals(10, frequentWordsOverTen.size(), "頻出ミス単語リストは10件であるべき")
         );
     }
 
@@ -234,5 +258,23 @@ public class PracticeServiceTest {
 
     private List<String> removeDummy(List<String> weaknessWords) {
         return weaknessWords.stream().filter(s -> !s.startsWith("dummy")).toList();
+    }
+    
+    private List<TestResult> createFrequentMistake(int num) {
+        List<TestResult> targetResult = new ArrayList<>();
+        for (int i = 0; i < num; i++) {
+            WordResult testWordResult = new WordResult("freq_" + String.valueOf(i), List.of(new MistakeDetail(MistakeType.SUBSTITUTION, 'a', 'b', 'c', 0)));
+            LinkedHashMap<String, WordResult> testResults = new LinkedHashMap<>();
+            testResults.put("freq_" + String.valueOf(i), testWordResult);
+            TestResult testResult = new TestResult(LocalDateTime.now(), testResults, 0.0, 0.0);
+            targetResult.add(testResult);
+        }
+        return targetResult;
+    }
+
+    private List<String> setupFrequentWords(List<TestResult> results) {
+        PracticeWords result = practiceService.generatePracticeWords(results);
+        List<String> frequentWords = result.frequentMistakeWords();
+        return frequentWords;
     }
 }
