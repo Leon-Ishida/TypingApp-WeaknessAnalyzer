@@ -93,7 +93,7 @@ public class PracticeService {
 
         //単語数が問題数より多い場合、単語数を減らす
         if (wordList.size() > AppConfig.PRACTICE_NUMBERS_OF_QUESTIONS) {
-            wordList.subList(0, AppConfig.PRACTICE_NUMBERS_OF_QUESTIONS);
+            return wordList.subList(0, AppConfig.PRACTICE_NUMBERS_OF_QUESTIONS);
         }
 
         return wordList;
@@ -211,7 +211,7 @@ public class PracticeService {
         List<String> wordList = new ArrayList<>(resultSet);
 
         if (wordList.size() > AppConfig.PRACTICE_NUMBERS_OF_QUESTIONS) {
-            wordList.subList(0, AppConfig.PRACTICE_NUMBERS_OF_QUESTIONS);
+            return wordList.subList(0, AppConfig.PRACTICE_NUMBERS_OF_QUESTIONS);
         }
 
         return wordList;
