@@ -167,7 +167,7 @@ public class PracticeService {
     /**
      * 各ミスの傾向に沿ったフィルターを使い単語を探して単語リストに格納するメソッド
      * @param resultSet 探した単語を格納するSet
-     * @param limit Setに格納する単語数(多めにするために2倍して使用)
+     * @param limit Setに格納する単語数
      * @param filter 各ミスの傾向から適切な単語を決定する条件
      */
     private void addWordsWithFilter(Set<String> resultSet, int limit, Predicate<String> filter) {

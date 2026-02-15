@@ -33,13 +33,13 @@ public class PracticeServiceTest {
     @InjectMocks
     private PracticeService practiceService;
 
-    private final List<String> mockDictionary = List.of(
+    private final List<String> mockDictUnderTenionary = List.of(
             "assert", "sample", "sat", "as", "assemble", "save", "apple", "sun", "book", "appart"
     );
 
     @BeforeEach
     void setup() {
-        setupMockWordManager(mockDictionary);
+        setupMockWordManager(mockDictUnderTenionary);
     }
 
     @Test
@@ -123,13 +123,13 @@ public class PracticeServiceTest {
     @Test
     @DisplayName("複合ミス: 置換と交換が混在する場合、両方の弱点単語が重複なく抽出されること")
     void weaknessWordComposite() {
-        List<String> mockDictionaryComposite = List.of(
+        List<String> mockDictUnderTenionaryComposite = List.of(
             "sub_xy_1", "sub_yx_2",
             "trans_as_1", "trans_sa_2",
             "both_xy_sa",
             "trans_extra_as"
         );
-        when(mockWordManager.getWords()).thenReturn(mockDictionaryComposite);
+        when(mockWordManager.getWords()).thenReturn(mockDictUnderTenionaryComposite);
 
         List<TestResult> compositeResults = new ArrayList<>();
         compositeResults.addAll(createSubstitutionMistake('x', 'y'));
@@ -143,6 +143,48 @@ public class PracticeServiceTest {
             () -> assertTrue(removeDummy.stream().anyMatch(s -> s.startsWith("trans")), "交換用単語が含まれていること"),
             () -> assertEquals(removeDummy.stream().distinct().count(), removeDummy.size(), "重複単語が含まれていないこと"),
             () -> assertEquals(10, weaknessWords.size(), "合計10個であること")
+        );
+    }
+
+    @Test
+    @DisplayName("弱点克服練習単語は10件でなければならない")
+    void testWordsSize() {
+        //練習単語が10件に満たない場合
+        List<String> mockDictUnderTen = new ArrayList<>();
+        for (int i = 0; i < 5; i++) {
+            mockDictUnderTen.add("xy_" + String.valueOf(i));
+        }
+        when(mockWordManager.getWords()).thenReturn(mockDictUnderTen);
+
+        List<TestResult> resultsUnderTen = createTranspositionMistake('x', 'y');
+        List<String> weaknessWordsUnderTen = setupWeaknessWords(resultsUnderTen);
+        List<String> removeDummyWordsUnderTen = removeDummy(weaknessWordsUnderTen);
+        assertAll("弱点克服練習単語のサイズ検証(10件に満たない場合)",
+            () -> assertEquals(3, removeDummyWordsUnderTen.size(), "弱点克服単語リストにダミーは7個であるべき"),
+            () -> assertEquals(10, weaknessWordsUnderTen.size(), "弱点克服練習単語は合計10件であること")
+        );
+
+        //練習単語が10件より多い場合
+        List<String> mockDictOverTen = new ArrayList<>();
+        for (int i = 0; i < 3; i++) {
+            mockDictOverTen.add("sub_ab_" + String.valueOf(i));
+            mockDictOverTen.add("trans_cd_" + String.valueOf(i));
+            mockDictOverTen.add("del_ef_" + String.valueOf(i));
+            mockDictOverTen.add("ins_gh_" + String.valueOf(i));
+        }
+        when(mockWordManager.getWords()).thenReturn(mockDictOverTen);
+
+        List<TestResult> resultsOverTen = new ArrayList<>();
+        resultsOverTen.addAll(createSubstitutionMistake('a', 'b'));
+        resultsOverTen.addAll(createTranspositionMistake('c', 'd'));
+        resultsOverTen.addAll(createDeletionMistake('e'));
+        resultsOverTen.addAll(createInsertionMistake('g', 'h', 'x'));
+
+        List<String> weaknessWordsOverTen = setupWeaknessWords(resultsOverTen);
+        List<String> removeDummyWordsOverTen = removeDummy(weaknessWordsOverTen);
+        assertAll("弱点克服練習単語のサイズ検証(10件より多い場合)",
+            () -> assertEquals(10, removeDummyWordsOverTen.size(), "弱点克服単語リストにはダミーは含まれていてはならない"),
+            () -> assertEquals(10, weaknessWordsOverTen.size(), "弱点克服単語は合計10件であること")
         );
     }
 
