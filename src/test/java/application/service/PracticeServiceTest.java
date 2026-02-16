@@ -4,10 +4,12 @@ import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.when;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -234,6 +236,36 @@ public class PracticeServiceTest {
         );
     }
 
+    @Test
+    @DisplayName("入力がnullまたは空の場合、どちらの練習単語もランダムな単語が10個含まれること")
+    void testNonOrNullData() {
+        //入力がnullの時
+        List<String> weaknessWordsOfNull = setupWeaknessWords(null);
+        List<String> frequentWordsOfNull = setupFrequentWords(null);
+        List<String> removeDummyWeaknessWordsOfNull = removeDummy(weaknessWordsOfNull);
+        List<String> removeDummyFrequentWordsOfNull = removeDummy(frequentWordsOfNull);
+
+        assertAll("null入力時の単語リスト検証",
+            () -> assertEquals(10, weaknessWordsOfNull.size(), "弱点克服練習単語は10件であるべき"),
+            () -> assertEquals(10, frequentWordsOfNull.size(), "頻出ミス単語は10件であるべき"),
+            () -> assertEquals(0, removeDummyWeaknessWordsOfNull.size(), "弱点克服練習単語はすべてダミーであるべき"),
+            () -> assertEquals(0, removeDummyFrequentWordsOfNull.size(), "頻出ミス単語はすべてダミーであるべき")
+        );
+
+        //入力が空の時
+        List<String> weaknessWordsOfNon = setupWeaknessWords(Collections.emptyList());
+        List<String> frequentWordsOfNon = setupFrequentWords(Collections.emptyList());
+        List<String> removeDummyWeaknessWordsOfNon = removeDummy(weaknessWordsOfNon);
+        List<String> removeDummyFrequentWordsOfNon = removeDummy(frequentWordsOfNon);
+
+        assertAll("空リスト入力時の単語リスト検証",
+            () -> assertEquals(10, weaknessWordsOfNon.size(), "弱点克服練習単語は10件であるべき"),
+            () -> assertEquals(10, frequentWordsOfNon.size(), "頻出ミス単語は10件であるべき"),
+            () -> assertEquals(0, removeDummyWeaknessWordsOfNon.size(), "弱点克服練習単語はすべてダミーであるべき"),
+            () -> assertEquals(0, removeDummyFrequentWordsOfNon.size(), "頻出ミス単語はすべてダミーであるべき")
+        );
+    }
+
     private List<TestResult> createSubstitutionMistake(char a1, char a2) {
         WordResult testWordResult = new WordResult("testWord", List.of(new MistakeDetail(MistakeType.SUBSTITUTION, a1, a2, '\0', 0)));
         LinkedHashMap<String, WordResult> testResults = new LinkedHashMap<>();
@@ -267,9 +299,9 @@ public class PracticeServiceTest {
     }
 
     private void setupMockWordManager(List<String> dictionary) {
-        when(mockWordManager.getWords()).thenReturn(dictionary);
+        lenient().when(mockWordManager.getWords()).thenReturn(dictionary);
         AtomicInteger counter = new AtomicInteger(1);
-        when(mockWordManager.getRandomWord()).thenAnswer(inv -> "dummy" + counter.getAndIncrement());
+        lenient().when(mockWordManager.getRandomWord()).thenAnswer(inv -> "dummy" + counter.getAndIncrement());
     }
 
     private List<String> setupWeaknessWords(List<TestResult> results) {
