@@ -2,6 +2,7 @@ package application.service;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
 
@@ -209,6 +210,27 @@ public class PracticeServiceTest {
         assertAll("頻出ミス単語のサイズ検証(10件より多い場合)",
             () -> assertEquals(10, removeDummyWordsOverTen.size(), "頻出ミス単語リストにダミーは含まれてはならない"),
             () -> assertEquals(10, frequentWordsOverTen.size(), "頻出ミス単語リストは10件であるべき")
+        );
+    }
+
+    @Test
+    @DisplayName("頻出ミス単語はミス回数上位10件が選ばれること")
+    void testFrequentWordsSelection() {
+        List<TestResult> results = new ArrayList<>();
+        for (int i = 0; i < 12; i++) {
+            results.addAll(createFrequentMistake(i + 1));
+        }
+        List<String> frequentWords = setupFrequentWords(results);
+
+        List<String> expectedWords = new ArrayList<>();
+        for (int i = 0; i < 10; i++) {
+            expectedWords.add("freq_" + String.valueOf(i));
+        }
+        assertAll("頻出ミス単語の上位10件選出検証",
+            () -> assertEquals(10, frequentWords.size(), "10件であること"),
+            () -> assertTrue(frequentWords.containsAll(expectedWords), "ミス回数上位10件がすべて含まれること"),
+            () -> assertFalse(frequentWords.contains("freq_10"), "ミス2回のfreq_10が含まれないこと"),
+            () -> assertFalse(frequentWords.contains("freq_11"), "ミス1回のfreq_11が含まれないこと")
         );
     }
 
