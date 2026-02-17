@@ -36,13 +36,13 @@ public class PracticeServiceTest {
     @InjectMocks
     private PracticeService practiceService;
 
-    private final List<String> mockDictUnderTenionary = List.of(
+    private final List<String> mockDictionary = List.of(
             "assert", "sample", "sat", "as", "assemble", "save", "apple", "sun", "book", "appart"
     );
 
     @BeforeEach
     void setup() {
-        setupMockWordManager(mockDictUnderTenionary);
+        setupMockWordManager(mockDictionary);
     }
 
     @Test
@@ -126,13 +126,13 @@ public class PracticeServiceTest {
     @Test
     @DisplayName("複合ミス: 置換と交換が混在する場合、両方の弱点単語が重複なく抽出されること")
     void weaknessWordComposite() {
-        List<String> mockDictUnderTenionaryComposite = List.of(
+        List<String> mockDictionaryComposite = List.of(
             "sub_xy_1", "sub_yx_2",
             "trans_as_1", "trans_sa_2",
             "both_xy_sa",
             "trans_extra_as"
         );
-        when(mockWordManager.getWords()).thenReturn(mockDictUnderTenionaryComposite);
+        when(mockWordManager.getWords()).thenReturn(mockDictionaryComposite);
 
         List<TestResult> compositeResults = new ArrayList<>();
         compositeResults.addAll(createSubstitutionMistake('x', 'y'));
@@ -263,6 +263,23 @@ public class PracticeServiceTest {
             () -> assertEquals(10, frequentWordsOfNon.size(), "頻出ミス単語は10件であるべき"),
             () -> assertEquals(0, removeDummyWeaknessWordsOfNon.size(), "弱点克服練習単語はすべてダミーであるべき"),
             () -> assertEquals(0, removeDummyFrequentWordsOfNon.size(), "頻出ミス単語はすべてダミーであるべき")
+        );
+    }
+
+    @Test
+    @DisplayName("すべて正解の時、頻出ミス単語はランダムな単語10件で埋まること")
+    void testAllCorrectCase() {
+        WordResult correctResult = new WordResult("testWord", Collections.emptyList());
+        LinkedHashMap<String, WordResult> testResults = new LinkedHashMap<>();
+        testResults.put("testWord", correctResult);
+        TestResult testResult = new TestResult(LocalDateTime.now(), testResults, 0.0, 0.0);
+        
+        List<String> frequentWords = setupFrequentWords(List.of(testResult));
+        List<String> removeDummyFrequentWords = removeDummy(frequentWords);
+
+        assertAll("すべて正解時の頻出ミス単語検証",
+            () -> assertEquals(10, frequentWords.size(), "頻出ミス単語は10件であるべき"),
+            () -> assertEquals(0, removeDummyFrequentWords.size(), "頻出ミス単語はすべてダミーであるべき")
         );
     }
 
