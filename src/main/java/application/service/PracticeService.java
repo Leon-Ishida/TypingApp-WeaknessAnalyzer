@@ -93,7 +93,7 @@ public class PracticeService {
 
         //単語数が問題数より多い場合、単語数を減らす
         if (wordList.size() > AppConfig.PRACTICE_NUMBERS_OF_QUESTIONS) {
-            wordList.subList(0, AppConfig.PRACTICE_NUMBERS_OF_QUESTIONS);
+            return wordList.subList(0, AppConfig.PRACTICE_NUMBERS_OF_QUESTIONS);
         }
 
         return wordList;
@@ -167,22 +167,17 @@ public class PracticeService {
     /**
      * 各ミスの傾向に沿ったフィルターを使い単語を探して単語リストに格納するメソッド
      * @param resultSet 探した単語を格納するSet
-     * @param limit Setに格納する単語数(多めにするために2倍して使用)
+     * @param limit Setに格納する単語数
      * @param filter 各ミスの傾向から適切な単語を決定する条件
      */
     private void addWordsWithFilter(Set<String> resultSet, int limit, Predicate<String> filter) {
         List<String> foundWords = this.wordManager.getWords().stream()
-            .filter(filter)
-            .limit(limit * 2)
-            .toList();
-        int addCount = 0;
-        for (String foundWord : foundWords) {
-            if (addCount >= limit) {
-                break;
-            }
-            resultSet.add(foundWord);
-            addCount++;
-        }
+            .filter(filter.and(word -> !resultSet.contains(word)))
+            .collect(Collectors.toList());
+        Collections.shuffle(foundWords);
+        foundWords.stream()
+            .limit(limit)
+            .forEach(resultSet::add);
     }
 
     /**
@@ -216,7 +211,7 @@ public class PracticeService {
         List<String> wordList = new ArrayList<>(resultSet);
 
         if (wordList.size() > AppConfig.PRACTICE_NUMBERS_OF_QUESTIONS) {
-            wordList.subList(0, AppConfig.PRACTICE_NUMBERS_OF_QUESTIONS);
+            return wordList.subList(0, AppConfig.PRACTICE_NUMBERS_OF_QUESTIONS);
         }
 
         return wordList;

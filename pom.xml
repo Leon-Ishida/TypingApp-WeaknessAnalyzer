@@ -69,6 +69,17 @@
           <mainClass>application.Main</mainClass>
         </configuration>
       </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <version>3.2.5</version>
+        <configuration>
+          <argLine>
+            -XX:+EnableDynamicAgentLoading
+            -Dnet.bytebuddy.experimental=true
+          </argLine>
+        </configuration>
+      </plugin>
     </plugins>
   </build>
 </project>
