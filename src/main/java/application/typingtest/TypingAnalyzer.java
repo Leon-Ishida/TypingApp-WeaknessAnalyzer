@@ -22,6 +22,9 @@ public class TypingAnalyzer {
      * @return テスト日時、ミスの種類及び統計を持った完全なテスト結果を含んだデータクラス
      */
     public TestResult analyze(LinkedHashMap<String, String> rawResult, long usedTimeMillis) {
+        if (rawResult == null || rawResult.isEmpty()) {
+            throw new IllegalArgumentException("テスト結果が空です");
+        }
         LinkedHashMap<String, WordResult> results = new LinkedHashMap<>();
         int totalChars = 0;
         int correctCount = 0;
