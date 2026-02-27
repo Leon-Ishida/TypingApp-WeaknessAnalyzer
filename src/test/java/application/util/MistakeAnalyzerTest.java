@@ -3,6 +3,9 @@ package application.util;
 import static org.junit.jupiter.api.Assertions.*;
 import java.util.List;
 import java.util.stream.Stream;
+
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -10,8 +13,7 @@ import application.model.MistakeDetail;
 import application.model.MistakeType;
 
 class MistakeAnalyzerTest {
-
-    static Stream<Arguments> provideTestCases() {
+    static Stream<Arguments> provideTheOtherMistakeCases() {
         return Stream.of(
             //完全一致
             Arguments.of("hello", "hello", 0, null, '\0', '\0'),
@@ -25,63 +27,169 @@ class MistakeAnalyzerTest {
             //削除 (l が抜ける)
             Arguments.of("hello", "helo", 1, MistakeType.DELETION, 'l', '\0'),
             
-            //挿入 (w が入る)
-            Arguments.of("hello", "hellow", 1, MistakeType.INSERTION, 'o', '\0'),
-            
             //空文字同士
-            Arguments.of("", "", 0, null, '\0', '\0'),
+            Arguments.of("", "", 0, null, '\0', '\0')
+        );
+    }
 
-            //sourceが空文字
-            Arguments.of("", "abc", 3, MistakeType.INSERTION, '\0', '\0'),
+    static Stream<Arguments> provideInsertionMistakeCases() {
+        return Stream.of(
+            //挿入 (w が先頭に入る)
+            Arguments.of("hello", "whello", 1, '\0', 'h', 'w'),
 
-            //targetが空文字
-            Arguments.of("abc", "", 3, MistakeType.DELETION, 'a', '\0')
+            //挿入 (w が中間に入る)
+            Arguments.of("hello", "hewllo", 1, 'e', 'l', 'w'),
+
+            //挿入 (w が末尾に入る)
+            Arguments.of("hello", "hellow", 1, 'o', '\0', 'w')
         );
     }
 
     @ParameterizedTest
-    @MethodSource("provideTestCases")
-    void testMistakeAnalysis(String source, String target, int expectedSize, MistakeType expectedType, char expectedChar, char actualChar) {
+    @DisplayName("挿入ミス以外のミスの検証および完全一致と空文字の検証")
+    @MethodSource("provideTheOtherMistakeCases")
+    void testTheOtherMistakes(String source, String target, int expectedSize,
+        MistakeType expectedType, char expectedChar, char actualChar) {
         
         List<MistakeDetail> mistakes = MistakeAnalyzer.analyzeMistakes(source, target);
 
-        // 1. ミスの数が合っているか確認
+        // ミスの数が合っているか確認
         assertEquals(expectedSize, mistakes.size(), 
             () -> String.format("入力: '%s' -> '%s' のミス数が期待と異なります", source, target));
 
-        // ミスがある場合のみ詳細をチェック（今回は最初のミスだけチェックする簡易版）
+        // ミスがある場合のみ詳細をチェック
         if (expectedSize > 0) {
-            MistakeDetail mistake = mistakes.get(0);
-            
-            // 2. ミスの種類が合っているか
-            assertEquals(expectedType, mistake.mistakeType(), 
-                "ミスの種類が違います");
-            
-            // 3. 期待値・入力値の文字が合っているか
-            // 挿入(INSERTION)の場合はロジックにより検証内容が複雑になるため、ここでは簡易チェックに留めるか、
-            // 厳密にやるならif文で分岐させます。
-            if (expectedType != MistakeType.INSERTION) {
-                assertEquals(expectedChar, mistake.expected(), "Expected文字が違います");
+            for (int i = 0; i < expectedSize; i++) {
+                MistakeDetail mistake = mistakes.get(i);
+                int count = i; 
+
+                assertAll("ミスがある場合のミスの種類とExpected,Actual検証",
+                    () -> assertEquals(expectedType, mistake.mistakeType(), 
+                        () -> String.format("'%d' 番目のミスの種類が違います", count + 1)
+                    ),
+                    () -> assertEquals(expectedChar, mistake.expected(),
+                        () -> String.format("'%d' 番目のExpected文字が違います", count + 1)
+                    ),
+                    () -> assertEquals(actualChar, mistake.actual(),
+                        () -> String.format("'%d' 番目のActual文字が違います", count + 1)
+                    ),
+                    () -> assertEquals('\0', mistake.insertion(),
+                        () -> String.format("'%d' 番目のInsertion文字が違います", count + 1)
+                    )
+                );
             }
-            assertEquals(actualChar, mistake.actual(), "Actual文字が違います");
         }
     }
+
+    @ParameterizedTest
+    @DisplayName("挿入ミスの検証")
+    @MethodSource("provideInsertionMistakeCases")
+    void testInsertionMistakes(String source, String target, int expectedSize,
+            char expectedBeforeChar, char expectedAfterChar, char expectedInsertionChar) {
+        List<MistakeDetail> mistakes = MistakeAnalyzer.analyzeMistakes(source, target);
+
+        //挿入ミスのテスト項目はすべて1つだけミスした形式にしているため、mistakesから先頭のみを取る
+        MistakeDetail mistake = mistakes.get(0);
+
+        assertAll("挿入ミスの検証",
+            () -> assertEquals(expectedSize, mistakes.size(),
+                    () -> String.format("入力: '%s -> '%s' のミス数が期待と異なります", source, target)
+                ),
+            () -> assertEquals(expectedBeforeChar, mistake.expected(), "挿入文字の1文字前が違います"),
+            () -> assertEquals(expectedAfterChar, mistake.actual(), "挿入文字の1文字後が違います"),
+            () -> assertEquals(expectedInsertionChar, mistake.insertion(), "挿入文字が違います")
+        );
+    }
     
-    // 複合ミスなどの複雑なケースは、パラメータ化せず個別に書く方が読みやすいです
-    @org.junit.jupiter.api.Test
+    @Test
+    @DisplayName("複合ミスの検証")
     void testComplexMistakes() {
         // "correct" -> "curret" (o->u 置換, c削除)
         List<MistakeDetail> mistakes = MistakeAnalyzer.analyzeMistakes("correct", "curret");
         
-        assertEquals(2, mistakes.size());
-        assertEquals(MistakeType.SUBSTITUTION, mistakes.get(0).mistakeType());
-        assertEquals(MistakeType.DELETION, mistakes.get(1).mistakeType());
+        assertAll("置換と削除の複合ミスの検証",
+            () -> assertEquals(2, mistakes.size(), "ミスは2つであるべき"),
+            () -> assertEquals(MistakeType.SUBSTITUTION, mistakes.get(0).mistakeType(), "1つ目のミスは置換ミスであるべき"),
+            () -> assertEquals(MistakeType.DELETION, mistakes.get(1).mistakeType(), "2つ目のミスは削除ミスであるべき")
+        );
+
 
         // "abcde" -> "bacdef" (a->d 交換, f挿入)
         List<MistakeDetail> mistakes2 = MistakeAnalyzer.analyzeMistakes("abcde", "bacdef");
         
-        assertEquals(2, mistakes2.size());
-        assertEquals(MistakeType.TRANSPOSITION, mistakes2.get(0).mistakeType());
-        assertEquals(MistakeType.INSERTION, mistakes2.get(1).mistakeType());
+        assertAll("交換と挿入の複合ミスの検証",
+            () -> assertEquals(2, mistakes2.size(), "ミスは2つであるべき"),
+            () -> assertEquals(MistakeType.TRANSPOSITION, mistakes2.get(0).mistakeType(), "1つ目のミスは交換であるべき"),
+            () -> assertEquals(MistakeType.INSERTION, mistakes2.get(1).mistakeType(), "2つ目のミスは挿入ミスであるべき")
+        );
+    }
+
+    @Test
+    @DisplayName("同じ文字が連続する単語の検証")
+    void testSameChar() {
+        List<MistakeDetail> mistakes = MistakeAnalyzer.analyzeMistakes("book", "bok");
+
+        assertAll("同じ文字が連続する単語の検証",
+            () -> assertEquals(1, mistakes.size(), "ミスは1つであるべき"),
+            () -> assertEquals(MistakeType.DELETION, mistakes.get(0).mistakeType(), "ミスは削除であるべき")
+        );
+    }
+
+    @Test
+    @DisplayName("sourceが空文字の時の検証")
+    void testEmptySource() {
+        String target = "abc";
+        List<MistakeDetail> mistakes = MistakeAnalyzer.analyzeMistakes("", target);
+
+        assertEquals(3, mistakes.size(), "ミスは3つであるべき");
+        
+        for (int i = 0; i < mistakes.size(); i++) {
+            MistakeDetail mistake = mistakes.get(i);
+            int count = i;
+
+            assertAll("test",
+                () -> assertEquals(MistakeType.INSERTION, mistake.mistakeType(),
+                    () -> String.format("'%d' 番目のミスの種類が違います", count + 1)
+                ),
+                () -> assertEquals('\0', mistake.expected(),
+                    () -> String.format("'%d' 番目の挿入文字の1文字前が違います", count + 1)    
+                ),
+                () -> assertEquals('\0', mistake.actual(),
+                    () -> String.format("'%d' 番目の挿入文字の1文字後が違います", count + 1)
+                ),
+                () -> assertEquals(target.charAt(count), mistake.insertion(),
+                    () -> String.format("'%d' 番目の挿入文字が違います", count + 1)
+                )
+            );
+        }
+    }
+
+    @Test
+    @DisplayName("targetが空文字の時の検証")
+    void testEmptyTarget() {
+        String source = "abc";
+        List<MistakeDetail> mistakes = MistakeAnalyzer.analyzeMistakes(source, "");
+
+        assertEquals(3, mistakes.size(), "ミスは3つであるべき");
+
+        for (int i = 0; i < mistakes.size(); i++) {
+            MistakeDetail mistake = mistakes.get(i);
+            int count = i;
+
+            assertAll("test",
+                () -> assertEquals(MistakeType.DELETION, mistake.mistakeType(),
+                    () -> String.format("'%d' 番目のミスの種類が違います", count + 1)
+                ),
+                () -> assertEquals(source.charAt(count), mistake.expected(),
+                    () -> String.format("'%d' 番目の挿入文字の1文字前が違います", count + 1)    
+                ),
+                () -> assertEquals('\0', mistake.actual(),
+                    () -> String.format("'%d' 番目の挿入文字の1文字後が違います", count + 1)
+                ),
+                () -> assertEquals('\0', mistake.insertion(),
+                    () -> String.format("'%d' 番目の挿入文字が違います", count + 1)
+                )
+            );
+        }
     }
 }

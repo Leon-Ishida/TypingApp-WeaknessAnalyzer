@@ -28,14 +28,14 @@ public final class MistakeAnalyzer {
          * 
          * 制限ダメラウ・レーベンシュタイン距離を求めるアルゴリズム
          * 以下sourceの文字数をn、targetの文字数をmにする
-         * m行n列の2次元配列においてi行目j列目は、sourceのj文字目までとtargetのi文字目までのダメラウ・レーベンシュタイン距離d(i,j)を表している
+         * (m+1)行(n+1)列の2次元配列においてi行目j列目は、sourceのj文字目までとtargetのi文字目までのダメラウ・レーベンシュタイン距離d(i,j)を表している
          * ダメラウ・レーベンシュタイン距離には以下の関係式が成り立つ
          * d(i,j) = min{
          * 0 if i == j == 1,
          * d(i-1,j) + 1 if i > 0, (1)
          * d(i,j - 1) + 1 if j > 0, (2)
          * d(i- 1,j -1) + cost if i,j > 0, (3)
-         * d(i - 2, j - 2) if i,j > 1 and target[i] == source[j - 1] and target[i - 1] == source[j - 1], (4)
+         * d(i - 2, j - 2) + 1 if i,j > 1 and target[i] == source[j - 1] and target[i - 1] == source[j], (4)
          * }
          * ただし、costはtarget[i] == source[j]のとき0、他の場合1
          */
