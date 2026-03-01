@@ -147,7 +147,7 @@ class MistakeAnalyzerTest {
             MistakeDetail mistake = mistakes.get(i);
             int count = i;
 
-            assertAll("test",
+            assertAll("sourceが空文字の時のミスの種類、Expected、Actual、Insertion検証",
                 () -> assertEquals(MistakeType.INSERTION, mistake.mistakeType(),
                     () -> String.format("'%d' 番目のミスの種類が違います", count + 1)
                 ),
@@ -176,7 +176,7 @@ class MistakeAnalyzerTest {
             MistakeDetail mistake = mistakes.get(i);
             int count = i;
 
-            assertAll("test",
+            assertAll("targetが空文字の時のミスの種類、Expected、Actual、Insertion検証",
                 () -> assertEquals(MistakeType.DELETION, mistake.mistakeType(),
                     () -> String.format("'%d' 番目のミスの種類が違います", count + 1)
                 ),

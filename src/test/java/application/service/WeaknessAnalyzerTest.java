@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.LinkedHashMap;
 import java.util.stream.Stream;
 
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -29,7 +30,7 @@ public class WeaknessAnalyzerTest {
         return Stream.of(
             //置換ミスが1回の場合
             Arguments.of(
-                "Singel substitution",
+                "置換ミスが1回",
                 List.of(createMockResult("word", new MistakeDetail(MistakeType.SUBSTITUTION, 'x', 'y', '\0', 0))),
                 new SubstitutionPair('x', 'y'),
                 1L
@@ -37,7 +38,7 @@ public class WeaknessAnalyzerTest {
 
             //同じ置換ミスが複数ある場合
             Arguments.of(
-                "Multiple same substitution",
+                "同じ置換ミスが2回",
                 List.of(
                     createMockResult("word1", new MistakeDetail(MistakeType.SUBSTITUTION, 'a', 'b', '\0', 0)),
                     createMockResult("word2", new MistakeDetail(MistakeType.SUBSTITUTION, 'a', 'b', '\0', 1))    
@@ -48,7 +49,7 @@ public class WeaknessAnalyzerTest {
 
             //ミスがない場合
             Arguments.of(
-                "No mistakes",
+                "ミスなし",
                 List.of(createMockResult("correct", new MistakeDetail[0])),
                 null,
                 0L
@@ -56,7 +57,7 @@ public class WeaknessAnalyzerTest {
         );
     }
 
-    @ParameterizedTest(name = "Substitution test")
+    @ParameterizedTest(name = "{0}")
     @MethodSource("provideSubstitutionTestCases")
     void testSubstitutionAnalyzer(String testName, List<TestResult> targetResult, SubstitutionPair expectedPair, Long expectedCount) {
         WeaknessAnalyzer analyzer = new WeaknessAnalyzer(targetResult);
@@ -76,7 +77,7 @@ public class WeaknessAnalyzerTest {
         return Stream.of(
             //交換ミスが1回の場合
             Arguments.of(
-                "Single transposition",
+                "交換ミスが1回",
                 List.of(createMockResult("ab", new MistakeDetail(MistakeType.TRANSPOSITION, 'a', 'b', '\0', 0))),
                 new TranspositionPair('a', 'b'),
                 1L
@@ -84,24 +85,38 @@ public class WeaknessAnalyzerTest {
 
             //順序の正規化を確認
             Arguments.of(
-                "Order check",
+                "順序の正規化",
                 List.of(
                     createMockResult("ab", new MistakeDetail(MistakeType.TRANSPOSITION, 'a', 'b', '\0', 0)),
                     createMockResult("ba", new MistakeDetail(MistakeType.TRANSPOSITION, 'b', 'a', '\0', 1))
                 ),
                 new TranspositionPair('a', 'b'),
                 2L
+            ),
+
+            //ミスがない場合
+            Arguments.of(
+                "ミスなし",
+                List.of(createMockResult("correct", new MistakeDetail[0])),
+                null,
+                0L
             )
         );
     }
 
-    @ParameterizedTest(name = "Transposition test")
+    @ParameterizedTest(name = "{0}")
     @MethodSource("provideTranspositionTestCases")
     void testTranspositionAnalyzer(String testName, List<TestResult> targetResult, TranspositionPair expectedPair, Long expectedCount) {
         WeaknessAnalyzer analyzer = new WeaknessAnalyzer(targetResult);
         Map<TranspositionPair, Long> result = analyzer.findTopTranspositionMistakes(1);
 
-        assertEquals(expectedCount, result.get(expectedPair));
+        if (expectedPair == null) {
+            assertTrue(result.isEmpty(), "空のMapが返される必要があります");
+        } else {
+            assertFalse(result.isEmpty(), "空でないMapが返される必要があります");
+            assertTrue(result.containsKey(expectedPair), "期待されるべきペアが含まれていません");
+            assertEquals(expectedCount, result.get(expectedPair), "カウント数が一致しません");
+        }    
     }
 
     //削除ミスのテスト
@@ -109,7 +124,7 @@ public class WeaknessAnalyzerTest {
         return Stream.of(
             //削除ミスが1回の場合
             Arguments.of(
-                "Single deletion",
+                "削除ミス1回",
                 List.of(createMockResult("test", new MistakeDetail(MistakeType.DELETION, 'x', '\0', '\0', 0))),
                 'x',
                 1L
@@ -117,24 +132,38 @@ public class WeaknessAnalyzerTest {
 
             //削除ミスが複数ある場合
             Arguments.of(
-                "Multiple deletion",
+                "同じ削除ミス2回",
                 List.of(
                     createMockResult("test", new MistakeDetail(MistakeType.DELETION, 'x', '\0', '\0', 0)),
                     createMockResult("test", new MistakeDetail(MistakeType.DELETION, 'x', '\0', '\0', 1))
                 ),
                 'x',
                 2L
+            ),
+
+            //ミスがない場合
+            Arguments.of(
+                "ミスなし",
+                List.of(createMockResult("correct", new MistakeDetail[0])),
+                null,
+                0L
             )
         );
     }
 
-    @ParameterizedTest(name = "Deletion test")
+    @ParameterizedTest(name = "{0}")
     @MethodSource("provideDeletionTestCases")
     void testDeletionAnalyzer(String testName, List<TestResult> targetResult, Character expectedCharacter, Long expectedCount) {
         WeaknessAnalyzer analyzer = new WeaknessAnalyzer(targetResult);
         Map<Character, Long> result = analyzer.findTopDeletionMistakes(1);
 
-        assertEquals(expectedCount, result.get(expectedCharacter));
+        if (expectedCharacter == null) {
+            assertTrue(result.isEmpty(), "空のMapが返される必要があります");
+        } else {
+            assertFalse(result.isEmpty(), "空でないMapが返される必要があります");
+            assertTrue(result.containsKey(expectedCharacter), "期待されるべき文字が含まれていません");
+            assertEquals(expectedCount, result.get(expectedCharacter), "カウント数が一致しません");
+        }
     }
 
     //挿入ミスのテスト
@@ -142,7 +171,7 @@ public class WeaknessAnalyzerTest {
         return Stream.of(
             //挿入ミスが1回の場合
             Arguments.of(
-                "Single Inseriton",
+                "挿入ミス1回",
                 List.of(createMockResult("test", new MistakeDetail(MistakeType.INSERTION, 'a', 'b', 'x', 0))),
                 new InsertionPair('a', 'b', 'x'),
                 1L
@@ -150,24 +179,38 @@ public class WeaknessAnalyzerTest {
 
             //挿入ミスが複数の場合
             Arguments.of(
-                "Multiple Insertion",
+                "同じ挿入ミス2回",
                 List.of(
                     createMockResult("test", new MistakeDetail(MistakeType.INSERTION, 'a', 'b', 'x', 0)),
                     createMockResult("test", new MistakeDetail(MistakeType.INSERTION, 'a', 'b', 'x', 1))
                 ),
                 new InsertionPair('a', 'b', 'x'),
                 2L
+            ),
+
+            //ミスがない場合
+            Arguments.of(
+                "ミスなし",
+                List.of(createMockResult("correct", new MistakeDetail[0])),
+                null,
+                0L
             )
         );
     }
 
-    @ParameterizedTest(name = "Insertion tes")
+    @ParameterizedTest(name = "{0}")
     @MethodSource("provideInsertionTestCases")
     void testInsertionAnalyzer(String testName, List<TestResult> targetResult, InsertionPair expectedPair, Long expectedCount) {
         WeaknessAnalyzer analyzer = new WeaknessAnalyzer(targetResult);
         Map<InsertionPair, Long> result = analyzer.findTopInsertionMistakes(1);
 
-        assertEquals(expectedCount, result.get(expectedPair));
+        if (expectedPair == null) {
+            assertTrue(result.isEmpty(), "空のMapが返される必要があります");
+        } else {
+            assertFalse(result.isEmpty(), "空でないMapが返される必要があります");
+            assertTrue(result.containsKey(expectedPair), "期待されるべきペアが含まれていません");
+            assertEquals(expectedCount, result.get(expectedPair), "カウント数が一致しません");
+        }
     }
 
     /**
@@ -185,6 +228,7 @@ public class WeaknessAnalyzerTest {
 
     // ソート機能とリミット機能のテスト 置換ミスを用いる
     @Test
+    @DisplayName("ソート機能とリミット機能検証")
     void testSortingAndLimit() {
         // データ準備: 
         // 'a'->'b' (3回), 'c'->'d' (2回), 'e'->'f' (1回)
@@ -229,6 +273,7 @@ public class WeaknessAnalyzerTest {
 
     // 異なるミスタイプが混在する場合のフィルタリングテスト
     @Test
+    @DisplayName("異なるミスが混在する場合のフィルタリング検証")
     void testMixedMistakeTypes() {
         // 置換(Substitution)と削除(Deletion)を混ぜる
         List<TestResult> results = List.of(
@@ -252,6 +297,7 @@ public class WeaknessAnalyzerTest {
     }
 
     @Test
+    @DisplayName("nullまたは空リスト入力時の検証")
     void testNullOrEmptyInput() {
         WeaknessAnalyzer nullAnalyzer = new WeaknessAnalyzer(null);
         assertTrue(nullAnalyzer.findTopSubstitutionMistakes(3).isEmpty(), "null入力時は空リストが返されるべき");
@@ -259,4 +305,18 @@ public class WeaknessAnalyzerTest {
         WeaknessAnalyzer emptyAnalyzer = new WeaknessAnalyzer(List.of());
         assertTrue(emptyAnalyzer.findTopSubstitutionMistakes(3).isEmpty(), "空リスト入力時は空リストが返されるべき");
     }
+
+    @Test
+    @DisplayName("同じミスの種類がlimitより少ない場合の検証")
+    void testLimitExceedsActualMistakeCount() {
+        List<TestResult> targetResult = List.of(
+            createMockResult("word1", new MistakeDetail(MistakeType.SUBSTITUTION, 'a', 'b', '\0', 0)),
+            createMockResult("word2", new MistakeDetail(MistakeType.SUBSTITUTION, 'x', 'y', '\0', 1))
+        );
+        WeaknessAnalyzer analyzer = new WeaknessAnalyzer(targetResult);
+        Map<SubstitutionPair, Long> result = analyzer.findTopSubstitutionMistakes(5);
+        
+        assertEquals(2, result.size(), "limitがミスの件数より多い場合、すべてのミスが返されるべき");
+    }
+
 }
