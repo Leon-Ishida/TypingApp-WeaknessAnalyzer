@@ -190,4 +190,26 @@ public class ResultFilterTest {
             () -> assertEquals(15.0, largeResult.lastResult().wpm(), "直近は15件目であるべき")
         );
     }
+
+    @Test
+    @DisplayName("年をまたぐとき、同じ週のデータを正しく抽出すること")
+    void testFilterAcrossYears() {
+        LocalDateTime fixedNow = LocalDateTime.of(2026, 1, 2, 12, 0);
+
+        TestResult insideFront = createResult(LocalDateTime.of(2025, 12, 29, 0, 0, 0));
+        TestResult insideBack = createResult(LocalDateTime.of(2026, 1, 4, 23, 59, 59, 999));
+        TestResult outsideFront = createResult(LocalDateTime.of(2025, 12, 28, 23, 59, 59, 999));
+        TestResult outsideBack = createResult(LocalDateTime.of(2026, 1, 5, 0, 0, 0, 0));
+
+        List<TestResult> testList = Arrays.asList(insideFront, insideBack, outsideFront, outsideBack);
+
+        FilteredResult result = ResultFilter.filterAll(testList, fixedNow);
+
+        assertAll("今週のデータの境界値検証",
+            () -> assertTrue(result.thisWeekResults().contains(insideFront), "今週初めが含まれるべき"),
+            () -> assertTrue(result.thisWeekResults().contains(insideBack), "今週末が含まれるべき"),
+            () -> assertFalse(result.thisWeekResults().contains(outsideFront), "先週末が含まれないべき"),
+            () -> assertFalse(result.thisWeekResults().contains(outsideBack), "翌週初めが含まれないべき")
+        );
+    }
 }
