@@ -21,7 +21,7 @@ public class ResultFilter {
     /**
      * 全テスト結果のリストと指定日時を受け取り、指定日時を今日として期間ごとに分類した結果オブジェクトを作る
      * <p>具体的には、「前回」「今日」「今週」「今月」「直近10回」のリストを作成し{@link application.model.FilteredResult}レコードとして返す</p>
-     * @param allResults 全テスト結果のリスト
+     * @param allResults 全テスト結果のリスト(時系列順であること)
      * @param now 期間を分類する指定日時
      * @return 各期間ごとに分類されたリストが格納されたFilteredResultオブジェクト
      * 引数のリストがnullまたは空の場合、すべてのリストが空のFilteredResultオブジェクトを返す
