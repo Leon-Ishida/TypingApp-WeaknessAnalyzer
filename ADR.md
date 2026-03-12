@@ -74,3 +74,12 @@
 * **決定** : `MistakeDetail`から`position`フィールドの削除
 * **対象** : `MistakeDetail`
 * **理由** : 現状使用しておらず、活用方法が見い出せないため
+
+## `LinkedHashMap<String, WordResult>`の永続化方法
+### 2026-03-12
+* **決定** : JSON文字列(`@Lob`+`ObjectMapper`)
+* **対象** : `TestResultEntity`
+* **理由** : 
+    * `record`の不変性
+    * `@ElementCollection`を使用した場合、ネスト構造によるテーブルの増加が見込まれるため
+    * 既存クラスへの変更不要
