@@ -2,52 +2,46 @@ package application.controller;
 
 import org.springframework.web.bind.annotation.RestController;
 
-import application.entity.Memo;
-import application.repository.MemoRepository;
+import application.dto.AnalyzeRequest;
+import application.dto.AnalyzeResponse;
+import application.service.AnalyzeService;
 
 import java.util.List;
-import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
 
 
 
 @RestController
+@RequestMapping("/api")
 public class AnalyzerController {
     @Autowired
-    private MemoRepository memoRepository;
+    private AnalyzeService analyzeService;
 
-    @GetMapping("/hello")
-    public String hello(@RequestParam(defaultValue = "test") String param) {
-        return String.format("hello world. param is %s", param);
+    @PostMapping("/analyze")
+    public AnalyzeResponse analyzeResult(@RequestBody AnalyzeRequest request) {
+        AnalyzeResponse response = analyzeService.analyzeResult(request);
+        return response;
     }
 
-    @GetMapping("/test")
-    public Map<String, String> test() {
-        return Map.of("message", "動いた", "status", "ok");
+    @PostMapping("/results")
+    public AnalyzeResponse saveResult(@RequestBody AnalyzeRequest request) {
+        AnalyzeResponse response = analyzeService.saveResult(request);
+        return response;
     }
 
-    @PostMapping("/echo")
-    public Map<String, String> echo(@RequestBody Map<String, String> input) {
-        //TODO: process POST request
-        
-        return input;
+    @GetMapping("/results")
+    public List<AnalyzeResponse> getAllResults() {
+        return analyzeService.findAllResults();
     }
 
-    @PostMapping("/memo")
-    public Memo createMemo(@RequestBody Map<String, String> input) {
-        Memo memo = new Memo(input.get("text"));
-        return memoRepository.save(memo);
+    @GetMapping("/results/{id}")
+    public AnalyzeResponse getResultById(@PathVariable Long id) {
+        return analyzeService.findResultById(id);
     }
-
-    @GetMapping("/memo")
-    public List<Memo> getAllMemos() {
-        return memoRepository.findAll();
-    }
-    
-     
 }
