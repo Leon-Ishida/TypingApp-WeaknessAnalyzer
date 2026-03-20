@@ -7,8 +7,11 @@ import application.dto.AnalyzeResponse;
 import application.service.AnalyzeService;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -43,5 +46,10 @@ public class AnalyzerController {
     @GetMapping("/results/{id}")
     public AnalyzeResponse getResultById(@PathVariable Long id) {
         return analyzeService.findResultById(id);
+    }
+
+    @ExceptionHandler(NoSuchElementException.class)
+    public ResponseEntity<String> invalidIdException(NoSuchElementException e) {
+        return ResponseEntity.status(404).body(e.getMessage());
     }
 }
