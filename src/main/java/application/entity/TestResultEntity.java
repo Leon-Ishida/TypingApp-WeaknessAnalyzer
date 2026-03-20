@@ -10,6 +10,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Lob;
 import tools.jackson.core.type.TypeReference;
 import tools.jackson.databind.ObjectMapper;
 
@@ -24,6 +25,7 @@ public class TestResultEntity {
     @Column(updatable = false)
     private LocalDateTime timestamp;
 
+    @Lob
     @Column(nullable = false)
     private String resultsJson;
 
