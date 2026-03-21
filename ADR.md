@@ -83,3 +83,11 @@
     * `record`の不変性
     * `@ElementCollection`を使用した場合、ネスト構造によるテーブルの増加が見込まれるため
     * 既存クラスへの変更不要
+
+## テーブルの分割
+### 2026-03-21
+* **決定** : `resultsJson`を`WordResultEntity`+`MistakeDetailEntity`に正規化する
+* **対象** : `TestResultEntity`
+* **理由** :
+    * SQLで直接検索できるようにするため
+    * 特定のミスタイプだけ表示など、フィルターを導入する際に効率的にするため
