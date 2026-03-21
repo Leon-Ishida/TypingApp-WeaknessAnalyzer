@@ -102,23 +102,23 @@ public final class MistakeAnalyzer {
              */
             if (currentCost == subCost) {
                 if (cost == 1) {
-                    operations.add(new MistakeDetail(MistakeType.SUBSTITUTION, source.charAt(j - 1), target.charAt(i - 1), '\0', j - 1));
+                    operations.add(new MistakeDetail(MistakeType.SUBSTITUTION, source.charAt(j - 1), target.charAt(i - 1), '\0'));
                 }
                 i--;
                 j--;
             } else if (currentCost == transCost) {
-                operations.add(new MistakeDetail(MistakeType.TRANSPOSITION, source.charAt(j - 2), target.charAt(i - 2), '\0', j - 2));
+                operations.add(new MistakeDetail(MistakeType.TRANSPOSITION, source.charAt(j - 2), target.charAt(i - 2), '\0'));
                 i -= 2;
                 j -= 2;
             } else if (currentCost == delCost) {
                 //削除の場合誤った1文字がないため\0を入れる
-                operations.add(new MistakeDetail(MistakeType.DELETION, source.charAt(j - 1), '\0', '\0', j - 1));
+                operations.add(new MistakeDetail(MistakeType.DELETION, source.charAt(j - 1), '\0', '\0'));
                 j--;
             } else {
                 //挿入の場合どの間に挿入したかが大事なためexpextedに前の文字、actualに後の文字を入れる
                 char beforeChar = (j > 0) ? source.charAt(j - 1) : '\0';
                 char afterChar = (j < source.length()) ? source.charAt(j) : '\0';
-                operations.add(new MistakeDetail(MistakeType.INSERTION, beforeChar, afterChar, target.charAt(i - 1), j));
+                operations.add(new MistakeDetail(MistakeType.INSERTION, beforeChar, afterChar, target.charAt(i - 1)));
                 i--;
             }
         }
