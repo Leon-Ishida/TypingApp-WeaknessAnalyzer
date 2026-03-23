@@ -28,7 +28,9 @@
 | カテゴリ | 技術 |
 |---|---|
 | 言語 | Java |
-| UI | JavaFX |
+| フレームワーク | Spring Boot |
+| データベース | H2(JPA) |
+| APIドキュメント | Swagger UI(SpringDoc) |
 | テスト | JUnit 5, Mockito |
 | データ処理 | Jackson (JSON) |
 | ビルド | Maven |
@@ -48,20 +50,32 @@
 - **`Set`**（`PracticeService`）: 練習単語の重複排除をデータ構造で担保。`List` + `contains` ($O(N)$) より `Set` ($O(1)$) が高速
 - **Stream API**（`WeaknessAnalyzer`, `PracticeService`）: 将来的なデータ量増大時の並列化に対応
 
-### UIとロジックの分離
+### UIとLogicの分離
 
-画面描画を行う`Controller`クラスとデータ分析ロジックを完全に分離し、特定のUIフレームワークに依存しないテスト容易性と保守性の高いアーキテクチャを実現
+Controller → Service → Logic層のレイヤードアーキテクチャを採用し、HTTPリクエスト処理とビジネスロジックを分離。Logic層は特定のフレームワークに依存せず、単体テストが容易な構造を実現
 
 ### 主要クラスの責務
 
-| クラス | 責務 |
-|---|---|
-| `MistakeAnalyzer` | ダメラウ・レーベンシュタイン距離によるミス検出 |
-| `TypingAnalyzer` | テスト結果の集約（WPM・正答率計算） |
-| `WeaknessAnalyzer` | ミスパターンの頻度分析・弱点抽出 |
-| `PracticeService` | 弱点に基づく練習単語の生成 |
-| `StatisticsCalculator` | 期間別の統計計算（平均WPM・正答率） |
-| `ResultFilter` | テスト結果の期間フィルタリング（今日・今週・今月） |
+| クラス | レイヤー | 責務 |
+|---|---|---|
+| `MistakeAnalyzer` | Logic | ダメラウ・レーベンシュタイン距離によるミス検出 |
+| `TypingAnalyzer` | Logic | テスト結果の集約（WPM・正答率計算） |
+| `WeaknessAnalyzer` | Logic | ミスパターンの頻度分析・弱点抽出 |
+| `PracticeService` | Logic | 弱点に基づく練習単語の生成 |
+| `StatisticsCalculator` | Logic | 期間別の統計計算（平均WPM・正答率） |
+| `ResultFilter` | Logic | テスト結果の期間フィルタリング（今日・今週・今月） |
+| `AnalyzerController` | Controller | RESTエンドポイントの定義、HTTPリクエスト/レスポンスの処理 |
+| `AnalyzeService` | Service | APIリクエストの処理、Logic層の呼び出し、EntityとDTOの相互変換 |
+| `TestResultEntity` | Entity | テスト結果のDB永続化、`TestResult`との相互変換 |
+| `TestResultRepository` | Repository | JPAによるDBアクセス |
+
+## API仕様
+| メソッド | パス | 機能 |
+|---|---|---|
+| POST | `/api/analyze` | `MistakeAnalyzer`で正誤判定し、JSONで判定結果を返す |
+| POST | `/api/results` | 判定結果をH2データベースに保存 |
+| GET | `/api/results` | 過去の履歴を返す |
+| GET | `/api/results/{id}` | 指定したidを持つ過去の履歴を返す |
 
 ## 品質保証
 
@@ -87,4 +101,5 @@ JUnit 5 による単体テストを整備し、リファクタリングの安全
 
 ## 今後の計画
 
-- **Spring Boot REST API への移行**: 現在の独立したミス判定ロジックを外部から直接評価することを可能にするために、Spring Bootを用いたステートレスな計算用REST APIの構築および、Swagger UIを利用した仕様公開
+- **Spring Boot REST API への移行**: 2026/03/21 完了
+- **タイピングテスト・弱点分析・練習機能の追加**: 既存の`TestService`,`WeaknessAnalyzer`,`ResultFilter`,`PracticeService`等の既存クラスを活用し、タイピングテストの実施・弱点克服・練習機能をREST APIとして公開する

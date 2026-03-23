@@ -4,16 +4,18 @@ import java.time.LocalDateTime;
 import java.util.LinkedHashMap;
 
 import application.model.MistakeDetail;
-import application.model.MistakeType;
 import application.model.TestResult;
 import application.model.WordResult;
 import application.util.MistakeAnalyzer;
 import java.util.List;
 
+import org.springframework.stereotype.Service;
+
 /**
  * ミスの特定と今回のテストにおけるwpmと正答率を計算するクラス
  */
 
+@Service
 public class TypingAnalyzer {
     /**
      * テスト結果と所要時間を受け取り、ミスの特定と統計を管理するメソッド

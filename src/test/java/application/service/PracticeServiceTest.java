@@ -284,7 +284,7 @@ public class PracticeServiceTest {
     }
 
     private List<TestResult> createSubstitutionMistake(char a1, char a2) {
-        WordResult testWordResult = new WordResult("testWord", List.of(new MistakeDetail(MistakeType.SUBSTITUTION, a1, a2, '\0', 0)));
+        WordResult testWordResult = new WordResult("testWord", List.of(new MistakeDetail(MistakeType.SUBSTITUTION, a1, a2, '\0')));
         LinkedHashMap<String, WordResult> testResults = new LinkedHashMap<>();
         testResults.put("testWord", testWordResult);
         TestResult testResult = new TestResult(LocalDateTime.now(), testResults, 0.0,0.0);
@@ -292,7 +292,7 @@ public class PracticeServiceTest {
     }
 
     private List<TestResult> createTranspositionMistake(char a1, char a2) {
-        WordResult testWordResult = new WordResult("testWord", List.of(new MistakeDetail(MistakeType.TRANSPOSITION, a1, a2, '\0', 0)));
+        WordResult testWordResult = new WordResult("testWord", List.of(new MistakeDetail(MistakeType.TRANSPOSITION, a1, a2, '\0')));
         LinkedHashMap<String, WordResult> testResults = new LinkedHashMap<>();
         testResults.put("testWord", testWordResult);
         TestResult testResult = new TestResult(LocalDateTime.now(), testResults, 0.0, 0.0);
@@ -300,7 +300,7 @@ public class PracticeServiceTest {
     }
 
     private List<TestResult> createDeletionMistake(char a1) {
-        WordResult testWordResult = new WordResult("testWord", List.of(new MistakeDetail(MistakeType.DELETION, a1, '\0', '\0', 0)));
+        WordResult testWordResult = new WordResult("testWord", List.of(new MistakeDetail(MistakeType.DELETION, a1, '\0', '\0')));
         LinkedHashMap<String, WordResult> testResults = new LinkedHashMap<>();
         testResults.put("testWord", testWordResult);
         TestResult testResult = new TestResult(LocalDateTime.now(), testResults, 0.0, 0.0);
@@ -308,7 +308,7 @@ public class PracticeServiceTest {
     }
 
     private List<TestResult> createInsertionMistake(char beforeChar, char afterChar, char insertionChar) {
-        WordResult testWordResult = new WordResult("testWord", List.of(new MistakeDetail(MistakeType.INSERTION, beforeChar, afterChar, insertionChar, 0)));
+        WordResult testWordResult = new WordResult("testWord", List.of(new MistakeDetail(MistakeType.INSERTION, beforeChar, afterChar, insertionChar)));
         LinkedHashMap<String, WordResult> testResults = new LinkedHashMap<>();
         testResults.put("testWord", testWordResult);
         TestResult testResult = new TestResult(LocalDateTime.now(), testResults, 0.0, 0.0);
@@ -334,7 +334,7 @@ public class PracticeServiceTest {
     private List<TestResult> createFrequentMistake(int num) {
         List<TestResult> targetResult = new ArrayList<>();
         for (int i = 0; i < num; i++) {
-            WordResult testWordResult = new WordResult("freq_" + String.valueOf(i), List.of(new MistakeDetail(MistakeType.SUBSTITUTION, 'a', 'b', 'c', 0)));
+            WordResult testWordResult = new WordResult("freq_" + String.valueOf(i), List.of(new MistakeDetail(MistakeType.SUBSTITUTION, 'a', 'b', 'c')));
             LinkedHashMap<String, WordResult> testResults = new LinkedHashMap<>();
             testResults.put("freq_" + String.valueOf(i), testWordResult);
             TestResult testResult = new TestResult(LocalDateTime.now(), testResults, 0.0, 0.0);
