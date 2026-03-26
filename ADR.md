@@ -93,3 +93,17 @@
 * **理由** :
     * SQLで直接検索できるようにするため
     * 特定のミスタイプだけ表示など、フィルターを導入する際に効率的にするため
+
+## 現在時刻の型
+### 2026-03-24
+* **決定** : `startedAt`をlong型で運用する
+* **対象** : `TestStartResponse`
+* **理由** : 
+    * longであればJavaScript側で`Date.now() - starteAt`で直接`usedTimeMillis`を計算できるため
+    * LocalDateTimeはJacksonがナノ秒精度でシリアライズするためJavaScriptの`Date.now()`と誤差が生じる可能性があるため
+* **注意点** : サーバーとクライアントは同一環境であることを想定している
+
+## `usedTimeMillis`測定方法
+### 2026-03-21
+* **決定** : クライアント側で計算し、`AnalyzeRequest`で送信する(`TestSession`不使用)
+* **理由** : RESTはステートレスのためリクエスト間で状態を保持できないため
