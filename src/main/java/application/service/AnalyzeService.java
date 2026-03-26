@@ -33,7 +33,7 @@ public class AnalyzeService {
         );
     }
 
-    public AnalyzeResponse saveResult(AnalyzeRequest request) {
+    public AnalyzeResponse submitResult(AnalyzeRequest request) {
         TestResult result = makeTestResult(request);
         TestResultEntity entity = TestResultEntity.fromRecord(result);
         repository.save(entity);
