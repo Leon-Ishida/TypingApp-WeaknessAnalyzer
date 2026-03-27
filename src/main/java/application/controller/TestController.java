@@ -27,7 +27,7 @@ public class TestController {
     }
 
     @GetMapping("/start")
-    public TestStartResponse getMethodName() {
+    public TestStartResponse startTest() {
         return new TestStartResponse(
             wordManager.getTestWords(),
             System.currentTimeMillis()
@@ -35,7 +35,7 @@ public class TestController {
     }
 
     @PostMapping("/submit")
-    public AnalyzeResponse postMethodName(@RequestBody AnalyzeRequest request) {
+    public AnalyzeResponse submitTest(@RequestBody AnalyzeRequest request) {
         AnalyzeResponse response = analyzeService.submitResult(request);
         return response;
     }
