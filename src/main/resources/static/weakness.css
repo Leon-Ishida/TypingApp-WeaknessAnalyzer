@@ -1,0 +1,95 @@
+/* ── weakness page ── */
+
+.weakness-section {
+  margin-bottom: 1.5rem;
+}
+
+.weakness-section-title {
+  margin-bottom: .25rem;
+}
+
+.weakness-section-desc {
+  font-size: .75rem;
+  color: var(--muted);
+  margin-bottom: .35rem;
+}
+
+.weakness-example {
+  font-size: .75rem;
+  color: var(--muted);
+  margin-bottom: .75rem;
+}
+.weakness-example code {
+  font-family: var(--mono);
+  color: var(--text);
+  background: var(--bg);
+  padding: .1rem .3rem;
+  border-radius: 2px;
+}
+.weakness-example .ex-wrong {
+  color: var(--wrong);
+  font-weight: 600;
+}
+
+.weakness-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .5rem;
+}
+
+.weakness-item {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: .5rem .75rem;
+  font-family: var(--mono);
+  font-size: .8rem;
+}
+
+.weakness-pair {
+  color: var(--bright);
+  font-weight: 600;
+  font-size: .9rem;
+}
+
+.weakness-count {
+  font-size: .65rem;
+  color: var(--muted);
+}
+
+.weakness-item-sub   { border-left: 3px solid #fbbf24; }
+.weakness-item-trans { border-left: 3px solid #a78bfa; }
+.weakness-item-del   { border-left: 3px solid var(--wrong); }
+.weakness-item-ins   { border-left: 3px solid #38bdf8; }
+
+.weakness-empty {
+  font-family: var(--mono);
+  font-size: .75rem;
+  color: var(--muted);
+  padding: .5rem 0;
+}
+
+/* ── loading / error ── */
+
+.weakness-loading {
+  font-family: var(--mono);
+  font-size: .85rem;
+  color: var(--muted);
+  padding: 2rem 0;
+  text-align: center;
+}
+
+.weakness-error {
+  display: none;
+  background: rgba(248,113,113,.1);
+  border: 1px solid rgba(248,113,113,.3);
+  color: var(--wrong);
+  font-family: var(--mono);
+  font-size: .8rem;
+  padding: .75rem 1rem;
+  border-radius: 4px;
+  margin-bottom: 1rem;
+}
