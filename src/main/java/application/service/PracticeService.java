@@ -5,7 +5,6 @@ import application.model.TestResult;
 import application.service.WeaknessAnalyzer.InsertionPair;
 import application.service.WeaknessAnalyzer.SubstitutionPair;
 import application.service.WeaknessAnalyzer.TranspositionPair;
-import application.model.Period;
 import application.model.AppConfig;
 
 import java.util.ArrayList;
@@ -18,17 +17,19 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+import org.springframework.stereotype.Service;
+
 /**
  * 練習用の単語リストを作るクラス
  */
 
+@Service
 public class PracticeService {
     private final WordManager wordManager;
     //各ミスの種類ごとに起こりやすいミスの第何位まで取るか決める定数
-    private static final int WEAKNESS_ANALYSIS_LIMIT = 1;
-    //
+    private static final int WEAKNESS_ANALYSIS_LIMIT = 3;
+    //各ミスの種類ごとSetに格納する単語数を決める定数
     private static final int ADD_LIMIT_FOR_SET = 3;
-
 
     //wordManagerを設定する
     public PracticeService(WordManager wordManager) {
@@ -58,29 +59,33 @@ public class PracticeService {
         //置換ミスのミスの傾向を調べ、それに対応した単語を単語リストのSetに格納する
         Map<SubstitutionPair, Long> topSub = weaknessAnalyzer.findTopSubstitutionMistakes(WEAKNESS_ANALYSIS_LIMIT);
         if (!topSub.isEmpty()) {
-            SubstitutionPair subPair = topSub.keySet().iterator().next();
-            addWordsContainsChars(resultSet, ADD_LIMIT_FOR_SET, subPair.expected(), subPair.actual());
+            for (SubstitutionPair subPair : topSub.keySet()) {
+                addWordsContainsChars(resultSet, ADD_LIMIT_FOR_SET, subPair.expected(), subPair.actual());
+            }
         }
 
         //交換ミスのミスの傾向を調べ、それに対応した単語を単語リストのSetに格納する
         Map<TranspositionPair, Long> topTrans = weaknessAnalyzer.findTopTranspositionMistakes(WEAKNESS_ANALYSIS_LIMIT);
         if (!topTrans.isEmpty()) {
-            TranspositionPair transPair = topTrans.keySet().iterator().next();
-            addWordsForTranspositionMistake(resultSet, ADD_LIMIT_FOR_SET, transPair);
+            for (TranspositionPair transPair : topTrans.keySet()) {
+                addWordsForTranspositionMistake(resultSet, ADD_LIMIT_FOR_SET, transPair);
+            }
         }
 
         //削除ミスのミスの傾向を調べ、それに対応した単語を単語リストのSetに格納する
         Map<Character, Long> topDel = weaknessAnalyzer.findTopDeletionMistakes(WEAKNESS_ANALYSIS_LIMIT);
         if (!topDel.isEmpty()) {
-            Character delCh = topDel.keySet().iterator().next();
-            addWordsContainsChars(resultSet, ADD_LIMIT_FOR_SET, delCh);
+            for (Character delCh : topDel.keySet()) {
+                addWordsContainsChars(resultSet, ADD_LIMIT_FOR_SET, delCh);
+            }
         }
 
         //挿入ミスのミスの傾向を調べ、それに対応した単語を単語リストのSetに格納する
         Map<InsertionPair, Long> topIns = weaknessAnalyzer.findTopInsertionMistakes(WEAKNESS_ANALYSIS_LIMIT);
         if (!topIns.isEmpty()) {
-            InsertionPair insPair = topIns.keySet().iterator().next();
-            addWordsForInsertionMistake(resultSet, ADD_LIMIT_FOR_SET, insPair);
+            for (InsertionPair insPair : topIns.keySet()) {
+                addWordsForInsertionMistake(resultSet, ADD_LIMIT_FOR_SET, insPair);
+            }
         }
 
         //単語数が問題数に満たない場合満たすようにランダムに追加する
