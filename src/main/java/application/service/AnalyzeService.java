@@ -40,6 +40,12 @@ public class AnalyzeService {
         return translateFromEntity(entity);
     }
 
+    public TestResult findLastResult() {
+        TestResultEntity lastResultEntity = repository.findTopByOrderByIdDesc()
+            .orElseThrow(() -> new NoSuchElementException("テスト結果がありません"));
+        return lastResultEntity.toRecord();
+    }
+
     public List<AnalyzeResponse> findAllResults() {
         List<TestResultEntity> allResults = repository.findAll();
         return allResults.stream().map(this::translateFromEntity).toList();
