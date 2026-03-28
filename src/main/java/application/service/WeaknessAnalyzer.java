@@ -11,10 +11,13 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import org.springframework.stereotype.Service;
+
 /**
  * 各ミスの種類ごとに起こりやすいミスを調べるクラス
  */
 
+@Service
 public class WeaknessAnalyzer {
     List<MistakeDetail> allMistakes;
     public record SubstitutionPair(char expected, char actual) {}
