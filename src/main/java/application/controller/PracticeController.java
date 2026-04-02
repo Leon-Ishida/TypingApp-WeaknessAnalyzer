@@ -1,7 +1,6 @@
 package application.controller;
 
 import java.util.List;
-import java.util.Map;
 import java.util.NoSuchElementException;
 
 import org.springframework.http.ResponseEntity;
@@ -13,13 +12,9 @@ import org.springframework.web.bind.annotation.RestController;
 import application.dto.PracticeStartResponse;
 import application.dto.WeaknessResponse;
 import application.model.PracticeWords;
-import application.model.TestResult;
 import application.service.AnalyzeService;
 import application.service.PracticeService;
-import application.service.WeaknessAnalyzer;
-import application.service.WeaknessAnalyzer.InsertionPair;
-import application.service.WeaknessAnalyzer.SubstitutionPair;
-import application.service.WeaknessAnalyzer.TranspositionPair;
+import application.service.WeaknessService;
 
 
 
@@ -28,23 +23,21 @@ import application.service.WeaknessAnalyzer.TranspositionPair;
 public class PracticeController {
     private final AnalyzeService analyzeService;
     private final PracticeService practiceService;
+    private final WeaknessService weaknessService;
 
-    public PracticeController(AnalyzeService analyzeService, PracticeService practiceService) {
+    public PracticeController(
+        AnalyzeService analyzeService,
+        PracticeService practiceService,
+        WeaknessService weaknessService
+    ) {
         this.analyzeService = analyzeService;
         this.practiceService = practiceService;
+        this.weaknessService = weaknessService;
     }
     
     @GetMapping("/weakness")
     public WeaknessResponse getWeakness() {
-        TestResult lastResult = analyzeService.findLastResult();
-        WeaknessAnalyzer analyzer = new WeaknessAnalyzer(List.of(lastResult));
-
-        Map<SubstitutionPair, Long> topSub = analyzer.findTopSubstitutionMistakes(3);
-        Map<TranspositionPair, Long> topTrans = analyzer.findTopTranspositionMistakes(3);
-        Map<Character, Long> topDel = analyzer.findTopDeletionMistakes(3);
-        Map<InsertionPair, Long> topIns = analyzer.findTopInsertionMistakes(3);
-
-        return new WeaknessResponse(topSub, topTrans, topDel, topIns);
+        return weaknessService.analyzeWeakness();
     }
 
     @GetMapping("/start")
