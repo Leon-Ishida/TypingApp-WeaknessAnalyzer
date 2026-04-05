@@ -75,7 +75,7 @@ public class WordManager {
      * @return 単語を格納したList
      */
     public List<String> getWords() {
-        return this.words;
+        return Collections.unmodifiableList(words);
     }
 
     /**
