@@ -33,11 +33,17 @@ public class AnalyzeService {
         );
     }
 
-    public AnalyzeResponse saveResult(AnalyzeRequest request) {
+    public AnalyzeResponse submitResult(AnalyzeRequest request) {
         TestResult result = makeTestResult(request);
         TestResultEntity entity = TestResultEntity.fromRecord(result);
         repository.save(entity);
         return translateFromEntity(entity);
+    }
+
+    public TestResult findLastResult() {
+        TestResultEntity lastResultEntity = repository.findTopByOrderByIdDesc()
+            .orElseThrow(() -> new NoSuchElementException("テスト結果がありません"));
+        return lastResultEntity.toRecord();
     }
 
     public List<AnalyzeResponse> findAllResults() {

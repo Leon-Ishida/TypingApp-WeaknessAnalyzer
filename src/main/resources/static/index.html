@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TypingApp</title>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Noto+Sans+JP:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+<div id="app">
+
+  <!-- ─── START SCREEN ─── -->
+  <div id="screen-start" class="screen active">
+    <div class="card">
+      <p class="logo">Typing<span>App</span></p>
+      <p class="tagline">ミスの傾向を分析し、弱点を克服するタイピング練習</p>
+
+      <div class="meta-grid">
+        <div class="meta-item">
+          <span class="meta-value">10</span>
+          <p class="label meta-key">問題数</p>
+        </div>
+        <div class="meta-item">
+          <span class="meta-value">英単語</span>
+          <p class="label meta-key">出題形式</p>
+        </div>
+        <div class="meta-item">
+          <span class="meta-value">4種</span>
+          <p class="label meta-key">ミス分類</p>
+        </div>
+      </div>
+
+      <div id="error-banner"></div>
+
+      <button class="btn btn-primary" id="btn-start" onclick="startTest()">
+        テスト開始
+      </button>
+    </div>
+  </div>
+
+  <!-- ─── TEST SCREEN ─── -->
+  <div id="screen-test" class="screen">
+    <div class="test-header">
+      <span class="label" id="progress-label">0 / 10</span>
+      <span class="label" id="elapsed-label">00:00</span>
+    </div>
+
+    <div class="progress-bar-wrap">
+      <div class="progress-bar-fill" id="progress-fill" style="width:0%"></div>
+    </div>
+
+    <div class="card">
+      <p class="word-display" id="word-display"></p>
+
+      <div class="input-wrap">
+        <input
+          type="text"
+          id="typing-input"
+          autocomplete="off"
+          autocorrect="off"
+          autocapitalize="off"
+          spellcheck="false"
+          placeholder="ここに入力..."
+          onkeydown="handleKeydown(event)"
+        />
+      </div>
+      <p class="hint">Enter で次の問題へ</p>
+    </div>
+  </div>
+
+  <!-- ─── RESULT SCREEN ─── -->
+  <div id="screen-result" class="screen">
+    <div class="card">
+      <p class="result-headline label">// 結果</p>
+
+      <div class="stat-row">
+        <div class="stat-cell">
+          <span class="stat-num" id="result-wpm">--</span>
+          <span class="stat-unit">WPM</span>
+          <p class="label" style="margin-top:.25rem">ネット WPM</p>
+        </div>
+        <div class="stat-cell">
+          <span class="stat-num" id="result-acc">--</span>
+          <span class="stat-unit">%</span>
+          <p class="label" style="margin-top:.25rem">正答率</p>
+        </div>
+      </div>
+
+      <p class="label word-table-title">単語ごとの結果</p>
+      <table class="word-table">
+        <thead>
+          <tr>
+            <th>問題</th>
+            <th>解答</th>
+            <th>判定</th>
+            <th>ミスの詳細</th>
+          </tr>
+        </thead>
+        <tbody id="result-tbody"></tbody>
+      </table>
+
+      <div class="result-actions">
+        <button class="btn btn-secondary" onclick="goToStart()">もう一度</button>
+        <a href="weakness.html" class="btn btn-primary">弱点を分析する</a>
+      </div>
+    </div>
+  </div>
+
+</div>
+<script src="app.js"></script>
+</body>
+</html>

@@ -2,18 +2,23 @@ package application.service;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 
+import org.springframework.stereotype.Service;
+
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.core.JsonProcessingException;
+
+import application.model.AppConfig;
 
 /**
  * 単語を格納しているjsonファイルから単語リストを取得するクラス
  */
 
+@Service
 public class WordManager {
     private List<String> words;
 
@@ -70,7 +75,7 @@ public class WordManager {
      * @return 単語を格納したList
      */
     public List<String> getWords() {
-        return this.words;
+        return Collections.unmodifiableList(words);
     }
 
     /**
@@ -79,5 +84,16 @@ public class WordManager {
      */
     public void setWords(List<String> words) {
         this.words = words;
+    }
+
+    /**
+     * テスト問題の単語リストを渡すメソッド
+     * wordsをシャッフルした後に問題数を制限してから返す
+     * @return テスト問題数に制限された単語リスト
+     */
+    public List<String> getTestWords() {
+        List<String> shuffled = new ArrayList<>(words);
+        Collections.shuffle(shuffled);
+        return shuffled.subList(0, AppConfig.TEST_NUMBERS_OF_QUESTIONS);
     }
 }

@@ -16,7 +16,7 @@ import java.util.stream.Collectors;
  */
 
 public class WeaknessAnalyzer {
-    List<MistakeDetail> allMistakes;
+    private final List<MistakeDetail> allMistakes;
     public record SubstitutionPair(char expected, char actual) {}
     public record TranspositionPair(char char1, char char2) {
         public TranspositionPair(char char1, char char2) {
