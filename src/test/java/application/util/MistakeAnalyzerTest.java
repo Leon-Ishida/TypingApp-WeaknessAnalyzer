@@ -16,7 +16,7 @@ class MistakeAnalyzerTest {
     static Stream<Arguments> provideTheOtherMistakeCases() {
         return Stream.of(
             //完全一致
-            Arguments.of("hello", "hello", 0, null, '\0', '\0'),
+            Arguments.of("hello", "hello", 0, null, null, null),
             
             //置換 (e -> i)
             Arguments.of("hello", "hillo", 1, MistakeType.SUBSTITUTION, 'e', 'i'),
@@ -25,23 +25,23 @@ class MistakeAnalyzerTest {
             Arguments.of("hello", "hlelo", 1, MistakeType.TRANSPOSITION, 'e', 'l'),
             
             //削除 (l が抜ける)
-            Arguments.of("hello", "helo", 1, MistakeType.DELETION, 'l', '\0'),
+            Arguments.of("hello", "helo", 1, MistakeType.DELETION, 'l', null),
             
             //空文字同士
-            Arguments.of("", "", 0, null, '\0', '\0')
+            Arguments.of("", "", 0, null, null, null)
         );
     }
 
     static Stream<Arguments> provideInsertionMistakeCases() {
         return Stream.of(
             //挿入 (w が先頭に入る)
-            Arguments.of("hello", "whello", 1, '\0', 'h', 'w'),
+            Arguments.of("hello", "whello", 1, null, 'h', 'w'),
 
             //挿入 (w が中間に入る)
             Arguments.of("hello", "hewllo", 1, 'e', 'l', 'w'),
 
             //挿入 (w が末尾に入る)
-            Arguments.of("hello", "hellow", 1, 'o', '\0', 'w')
+            Arguments.of("hello", "hellow", 1, 'o', null, 'w')
         );
     }
 
@@ -49,7 +49,7 @@ class MistakeAnalyzerTest {
     @DisplayName("挿入ミス以外のミスの検証および完全一致と空文字の検証")
     @MethodSource("provideTheOtherMistakeCases")
     void testTheOtherMistakes(String source, String target, int expectedSize,
-        MistakeType expectedType, char expectedChar, char actualChar) {
+        MistakeType expectedType, Character expectedChar, Character actualChar) {
         
         List<MistakeDetail> mistakes = MistakeAnalyzer.analyzeMistakes(source, target);
 
@@ -73,7 +73,7 @@ class MistakeAnalyzerTest {
                     () -> assertEquals(actualChar, mistake.actual(),
                         () -> String.format("'%d' 番目のActual文字が違います", count + 1)
                     ),
-                    () -> assertEquals('\0', mistake.insertion(),
+                    () -> assertEquals(null, mistake.insertion(),
                         () -> String.format("'%d' 番目のInsertion文字が違います", count + 1)
                     )
                 );
@@ -85,7 +85,7 @@ class MistakeAnalyzerTest {
     @DisplayName("挿入ミスの検証")
     @MethodSource("provideInsertionMistakeCases")
     void testInsertionMistakes(String source, String target, int expectedSize,
-            char expectedBeforeChar, char expectedAfterChar, char expectedInsertionChar) {
+            Character expectedBeforeChar, Character expectedAfterChar, Character expectedInsertionChar) {
         List<MistakeDetail> mistakes = MistakeAnalyzer.analyzeMistakes(source, target);
 
         //挿入ミスのテスト項目はすべて1つだけミスした形式にしているため、mistakesから先頭のみを取る
@@ -151,10 +151,10 @@ class MistakeAnalyzerTest {
                 () -> assertEquals(MistakeType.INSERTION, mistake.mistakeType(),
                     () -> String.format("'%d' 番目のミスの種類が違います", count + 1)
                 ),
-                () -> assertEquals('\0', mistake.expected(),
+                () -> assertEquals(null, mistake.expected(),
                     () -> String.format("'%d' 番目の挿入文字の1文字前が違います", count + 1)    
                 ),
-                () -> assertEquals('\0', mistake.actual(),
+                () -> assertEquals(null, mistake.actual(),
                     () -> String.format("'%d' 番目の挿入文字の1文字後が違います", count + 1)
                 ),
                 () -> assertEquals(target.charAt(count), mistake.insertion(),
@@ -183,10 +183,10 @@ class MistakeAnalyzerTest {
                 () -> assertEquals(source.charAt(count), mistake.expected(),
                     () -> String.format("'%d' 番目の挿入文字の1文字前が違います", count + 1)    
                 ),
-                () -> assertEquals('\0', mistake.actual(),
+                () -> assertEquals(null, mistake.actual(),
                     () -> String.format("'%d' 番目の挿入文字の1文字後が違います", count + 1)
                 ),
-                () -> assertEquals('\0', mistake.insertion(),
+                () -> assertEquals(null, mistake.insertion(),
                     () -> String.format("'%d' 番目の挿入文字が違います", count + 1)
                 )
             );

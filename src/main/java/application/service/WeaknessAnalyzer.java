@@ -17,9 +17,9 @@ import java.util.stream.Collectors;
 
 public class WeaknessAnalyzer {
     private final List<MistakeDetail> allMistakes;
-    public record SubstitutionPair(char expected, char actual) {}
-    public record TranspositionPair(char char1, char char2) {
-        public TranspositionPair(char char1, char char2) {
+    public record SubstitutionPair(Character expected, Character actual) {}
+    public record TranspositionPair(Character char1, Character char2) {
+        public TranspositionPair(Character char1, Character char2) {
             if (char1 > char2) {
                 this.char1 = char1;
                 this.char2 = char2;
@@ -29,7 +29,7 @@ public class WeaknessAnalyzer {
             }
         }
     }
-    public record InsertionPair(char beforeChar, char afterChar, char insertionChar) {}
+    public record InsertionPair(Character beforeChar, Character afterChar, Character insertionChar) {}
 
     /**
      * 指定された期間で起きたミスをすべてリストにまとめる
@@ -70,7 +70,7 @@ public class WeaknessAnalyzer {
      * @return 削除した文字と発生回数を格納したMap
      */
     public Map<Character, Long> findTopDeletionMistakes(int limit) {
-        return findTopMistakes(MistakeType.DELETION, MistakeDetail::expected, limit);
+        return findTopMistakes(MistakeType.DELETION, e -> e.expected(), limit);
     }
 
     /**
@@ -99,8 +99,8 @@ public class WeaknessAnalyzer {
             .sorted(Map.Entry.<T, Long>comparingByValue().reversed())
             .limit(limit)
             .collect(Collectors.toMap(
-                Map.Entry::getKey,
-                Map.Entry::getValue,
+                e -> e.getKey(),
+                e -> e.getValue(),
                 (e1, e2) -> e1,
                 LinkedHashMap::new));
     }

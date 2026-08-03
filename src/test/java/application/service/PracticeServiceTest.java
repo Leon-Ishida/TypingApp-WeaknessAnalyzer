@@ -87,7 +87,7 @@ public class PracticeServiceTest {
     @Test
     @DisplayName("先頭での挿入ミス: 単語の先頭の文字が同じな単語を抽出されること")
     void weaknessWordInsertionFirst() {
-        List<String> weaknessWordsFirst = setupWeaknessWords(createInsertionMistake('\0', 'a', 't'));
+        List<String> weaknessWordsFirst = setupWeaknessWords(createInsertionMistake(null, 'a', 't'));
         List<String> removeDummyFirst = removeDummy(weaknessWordsFirst);
 
         assertAll("弱点克服用練習単語の検証(先頭での挿入ミス)",
@@ -113,7 +113,7 @@ public class PracticeServiceTest {
     @Test
     @DisplayName("末尾での挿入ミス: 単語の末尾の文字が同じな単語を抽出されること")
     void weaknessWordInsertionLast() {
-        List<String> weaknessWordsLast = setupWeaknessWords(createInsertionMistake('e', '\0', 't'));
+        List<String> weaknessWordsLast = setupWeaknessWords(createInsertionMistake('e', null, 't'));
         List<String> removeDummyLast = removeDummy(weaknessWordsLast);
 
         assertAll("弱点克服用練習単語の検証(末端での挿入ミス)",
@@ -283,31 +283,31 @@ public class PracticeServiceTest {
         );
     }
 
-    private List<TestResult> createSubstitutionMistake(char a1, char a2) {
-        WordResult testWordResult = new WordResult("testWord", List.of(new MistakeDetail(MistakeType.SUBSTITUTION, a1, a2, '\0')));
+    private List<TestResult> createSubstitutionMistake(Character a1, Character a2) {
+        WordResult testWordResult = new WordResult("testWord", List.of(new MistakeDetail(MistakeType.SUBSTITUTION, a1, a2, null)));
         LinkedHashMap<String, WordResult> testResults = new LinkedHashMap<>();
         testResults.put("testWord", testWordResult);
         TestResult testResult = new TestResult(LocalDateTime.now(), testResults, 0.0,0.0);
         return List.of(testResult);
     }
 
-    private List<TestResult> createTranspositionMistake(char a1, char a2) {
-        WordResult testWordResult = new WordResult("testWord", List.of(new MistakeDetail(MistakeType.TRANSPOSITION, a1, a2, '\0')));
+    private List<TestResult> createTranspositionMistake(Character a1, Character a2) {
+        WordResult testWordResult = new WordResult("testWord", List.of(new MistakeDetail(MistakeType.TRANSPOSITION, a1, a2, null)));
         LinkedHashMap<String, WordResult> testResults = new LinkedHashMap<>();
         testResults.put("testWord", testWordResult);
         TestResult testResult = new TestResult(LocalDateTime.now(), testResults, 0.0, 0.0);
         return List.of(testResult);
     }
 
-    private List<TestResult> createDeletionMistake(char a1) {
-        WordResult testWordResult = new WordResult("testWord", List.of(new MistakeDetail(MistakeType.DELETION, a1, '\0', '\0')));
+    private List<TestResult> createDeletionMistake(Character a1) {
+        WordResult testWordResult = new WordResult("testWord", List.of(new MistakeDetail(MistakeType.DELETION, a1, null, null)));
         LinkedHashMap<String, WordResult> testResults = new LinkedHashMap<>();
         testResults.put("testWord", testWordResult);
         TestResult testResult = new TestResult(LocalDateTime.now(), testResults, 0.0, 0.0);
         return List.of(testResult);
     }
 
-    private List<TestResult> createInsertionMistake(char beforeChar, char afterChar, char insertionChar) {
+    private List<TestResult> createInsertionMistake(Character beforeChar, Character afterChar, Character insertionChar) {
         WordResult testWordResult = new WordResult("testWord", List.of(new MistakeDetail(MistakeType.INSERTION, beforeChar, afterChar, insertionChar)));
         LinkedHashMap<String, WordResult> testResults = new LinkedHashMap<>();
         testResults.put("testWord", testWordResult);
