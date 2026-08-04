@@ -25,15 +25,15 @@ public class MistakeDetailEntity {
     @Enumerated(EnumType.STRING)
     private MistakeType mistakeType;
     
-    private char expected;
+    private Character expected;
 
-    private char actual;
+    private Character actual;
 
-    private char insertion;
+    private Character insertion;
 
     protected MistakeDetailEntity() {}
 
-    public MistakeDetailEntity(WordResultEntity wordResult, MistakeType mistakeType, char expected, char actual, char insertion) {
+    public MistakeDetailEntity(WordResultEntity wordResult, MistakeType mistakeType, Character expected, Character actual, Character insertion) {
         this.wordResult = wordResult;
         this.mistakeType = mistakeType;
         this.expected = expected;
@@ -44,7 +44,7 @@ public class MistakeDetailEntity {
     public Long getId() { return id; }
     public WordResultEntity getWordResult() { return wordResult; }
     public MistakeType getMistakeType() { return mistakeType; }
-    public char getExpected() { return expected; }
-    public char getActual() { return actual; }
-    public char getInsertion() { return insertion; }
+    public Character getExpected() { return expected; }
+    public Character getActual() { return actual; }
+    public Character getInsertion() { return insertion; }
 }

@@ -113,18 +113,18 @@ public class PracticeService {
      * @param pair 挿入した文字の前後の文字のペア
      */
     private void addWordsForInsertionMistake(Set<String> resultSet, int limit, InsertionPair pair) {
-        char beforeChar = pair.beforeChar();
-        char afterChar = pair.afterChar();
+        Character beforeChar = pair.beforeChar();
+        Character afterChar = pair.afterChar();
         Predicate<String> filter;
-        if (beforeChar == '\0' && afterChar != '\0') {
+        if (beforeChar == null && afterChar != null) {
             //先頭に挿入した場合
             String prefix = String.valueOf(afterChar);
             filter = word -> word.startsWith(prefix);
-        } else if (beforeChar != '\0' && afterChar == '\0') {
+        } else if (beforeChar != null && afterChar == null) {
             //末尾に挿入した場合
             String prefix = String.valueOf(beforeChar);
             filter = word -> word.endsWith(prefix);
-        } else if (beforeChar != '\0' && afterChar != '\0') {
+        } else if (beforeChar != null && afterChar != null) {
             //途中に挿入した場合
             String sequence = String.valueOf(beforeChar) + String.valueOf(afterChar);
             filter = word -> word.contains(sequence);
@@ -199,13 +199,13 @@ public class PracticeService {
             resultSet = targetResult.stream()
                 .flatMap(testResult -> testResult.results().entrySet().stream())
                 .filter(entry -> !entry.getValue().isCorrect())
-                .map(Map.Entry::getKey)
+                .map(e -> e.getKey())
                 .collect(Collectors.groupingBy(Function.identity(), Collectors.counting()))
                 //{間違えた単語, 間違えた回数}というMapを作る
                 .entrySet().stream()
                 .sorted(Map.Entry.<String, Long>comparingByValue().reversed())
                 .limit(AppConfig.PRACTICE_NUMBERS_OF_QUESTIONS)
-                .map(Map.Entry::getKey)
+                .map(e -> e.getKey())
                 .collect(Collectors.toSet());
         }
         //テスト結果がnullまたは空の時、ミスした単語が10個に届かないときランダムな単語を加える

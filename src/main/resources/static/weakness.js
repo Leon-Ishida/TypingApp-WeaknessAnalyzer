@@ -89,17 +89,18 @@ function formatDelChar(key) {
 }
 
 function formatInsPair(key) {
+  console.log("key:", key);
   if (typeof key === 'string') {
-    const m = key.match(/beforeChar=(.),\s*afterChar=(.),\s*insertionChar=(.)/);
+    const m = key.match(/beforeChar=(.*?),\s*afterChar=(.*?),\s*insertionChar=(.)/);
     if (m) {
-      const before = m[1] === '\0' ? '' : m[1];
-      const after  = m[2] === '\0' ? '' : m[2];
+      const before = (m[1] === 'null') ? '' : m[1];
+      const after  = (m[2] === 'null') ? '' : m[2];
       return `+${m[3]}(${before}_${after})`;
     }
     return key;
   }
-  const before = key.beforeChar === '\0' ? '' : key.beforeChar;
-  const after  = key.afterChar  === '\0' ? '' : key.afterChar;
+  const before = key.beforeChar === null ? '' : key.beforeChar;
+  const after  = key.afterChar  === null ? '' : key.afterChar;
   return `+${key.insertionChar}(${before}_${after})`;
 }
 

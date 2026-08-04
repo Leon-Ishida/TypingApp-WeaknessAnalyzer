@@ -9,7 +9,7 @@ package application.model;
 
 public record MistakeDetail(
     MistakeType mistakeType,
-    char expected,
-    char actual,
-    char insertion
+    Character expected,
+    Character actual,
+    Character insertion
 ) {}

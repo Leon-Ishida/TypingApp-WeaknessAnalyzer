@@ -31,7 +31,7 @@ public class WeaknessAnalyzerTest {
             //置換ミスが1回の場合
             Arguments.of(
                 "置換ミスが1回",
-                List.of(createMockResult("word", new MistakeDetail(MistakeType.SUBSTITUTION, 'x', 'y', '\0'))),
+                List.of(createMockResult("word", new MistakeDetail(MistakeType.SUBSTITUTION, 'x', 'y', null))),
                 new SubstitutionPair('x', 'y'),
                 1L
             ),
@@ -40,8 +40,8 @@ public class WeaknessAnalyzerTest {
             Arguments.of(
                 "同じ置換ミスが2回",
                 List.of(
-                    createMockResult("word1", new MistakeDetail(MistakeType.SUBSTITUTION, 'a', 'b', '\0')),
-                    createMockResult("word2", new MistakeDetail(MistakeType.SUBSTITUTION, 'a', 'b', '\0'))    
+                    createMockResult("word1", new MistakeDetail(MistakeType.SUBSTITUTION, 'a', 'b', null)),
+                    createMockResult("word2", new MistakeDetail(MistakeType.SUBSTITUTION, 'a', 'b', null))    
                 ),
                 new SubstitutionPair('a', 'b'),
                 2L
@@ -78,7 +78,7 @@ public class WeaknessAnalyzerTest {
             //交換ミスが1回の場合
             Arguments.of(
                 "交換ミスが1回",
-                List.of(createMockResult("ab", new MistakeDetail(MistakeType.TRANSPOSITION, 'a', 'b', '\0'))),
+                List.of(createMockResult("ab", new MistakeDetail(MistakeType.TRANSPOSITION, 'a', 'b', null))),
                 new TranspositionPair('a', 'b'),
                 1L
             ),
@@ -87,8 +87,8 @@ public class WeaknessAnalyzerTest {
             Arguments.of(
                 "順序の正規化",
                 List.of(
-                    createMockResult("ab", new MistakeDetail(MistakeType.TRANSPOSITION, 'a', 'b', '\0')),
-                    createMockResult("ba", new MistakeDetail(MistakeType.TRANSPOSITION, 'b', 'a', '\0'))
+                    createMockResult("ab", new MistakeDetail(MistakeType.TRANSPOSITION, 'a', 'b', null)),
+                    createMockResult("ba", new MistakeDetail(MistakeType.TRANSPOSITION, 'b', 'a', null))
                 ),
                 new TranspositionPair('a', 'b'),
                 2L
@@ -125,7 +125,7 @@ public class WeaknessAnalyzerTest {
             //削除ミスが1回の場合
             Arguments.of(
                 "削除ミス1回",
-                List.of(createMockResult("test", new MistakeDetail(MistakeType.DELETION, 'x', '\0', '\0'))),
+                List.of(createMockResult("test", new MistakeDetail(MistakeType.DELETION, 'x', null, null))),
                 'x',
                 1L
             ),
@@ -134,8 +134,8 @@ public class WeaknessAnalyzerTest {
             Arguments.of(
                 "同じ削除ミス2回",
                 List.of(
-                    createMockResult("test", new MistakeDetail(MistakeType.DELETION, 'x', '\0', '\0')),
-                    createMockResult("test", new MistakeDetail(MistakeType.DELETION, 'x', '\0', '\0'))
+                    createMockResult("test", new MistakeDetail(MistakeType.DELETION, 'x', null, null)),
+                    createMockResult("test", new MistakeDetail(MistakeType.DELETION, 'x', null, null))
                 ),
                 'x',
                 2L
@@ -234,12 +234,12 @@ public class WeaknessAnalyzerTest {
         // 'a'->'b' (3回), 'c'->'d' (2回), 'e'->'f' (1回)
         List<TestResult> results = List.of(
             createMockResult("word1", 
-                new MistakeDetail(MistakeType.SUBSTITUTION, 'a', 'b', '\0'),
-                new MistakeDetail(MistakeType.SUBSTITUTION, 'a', 'b', '\0'),
-                new MistakeDetail(MistakeType.SUBSTITUTION, 'a', 'b', '\0'),
-                new MistakeDetail(MistakeType.SUBSTITUTION, 'c', 'd', '\0'),
-                new MistakeDetail(MistakeType.SUBSTITUTION, 'c', 'd', '\0'),
-                new MistakeDetail(MistakeType.SUBSTITUTION, 'e', 'f', '\0')
+                new MistakeDetail(MistakeType.SUBSTITUTION, 'a', 'b', null),
+                new MistakeDetail(MistakeType.SUBSTITUTION, 'a', 'b', null),
+                new MistakeDetail(MistakeType.SUBSTITUTION, 'a', 'b', null),
+                new MistakeDetail(MistakeType.SUBSTITUTION, 'c', 'd', null),
+                new MistakeDetail(MistakeType.SUBSTITUTION, 'c', 'd', null),
+                new MistakeDetail(MistakeType.SUBSTITUTION, 'e', 'f', null)
             )
         );
 
@@ -278,8 +278,8 @@ public class WeaknessAnalyzerTest {
         // 置換(Substitution)と削除(Deletion)を混ぜる
         List<TestResult> results = List.of(
             createMockResult("word1", 
-                new MistakeDetail(MistakeType.SUBSTITUTION, 'a', 'b', '\0'),
-                new MistakeDetail(MistakeType.DELETION, 'c', '\0', '\0')
+                new MistakeDetail(MistakeType.SUBSTITUTION, 'a', 'b', null),
+                new MistakeDetail(MistakeType.DELETION, 'c', null, null)
             )
         );
 
@@ -310,8 +310,8 @@ public class WeaknessAnalyzerTest {
     @DisplayName("同じミスの種類がlimitより少ない場合の検証")
     void testLimitExceedsActualMistakeCount() {
         List<TestResult> targetResult = List.of(
-            createMockResult("word1", new MistakeDetail(MistakeType.SUBSTITUTION, 'a', 'b', '\0')),
-            createMockResult("word2", new MistakeDetail(MistakeType.SUBSTITUTION, 'x', 'y', '\0'))
+            createMockResult("word1", new MistakeDetail(MistakeType.SUBSTITUTION, 'a', 'b', null)),
+            createMockResult("word2", new MistakeDetail(MistakeType.SUBSTITUTION, 'x', 'y', null))
         );
         WeaknessAnalyzer analyzer = new WeaknessAnalyzer(targetResult);
         Map<SubstitutionPair, Long> result = analyzer.findTopSubstitutionMistakes(5);
