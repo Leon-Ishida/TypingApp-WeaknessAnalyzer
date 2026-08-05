@@ -9,14 +9,15 @@ import application.dto.TestStartResponse;
 import application.service.AnalyzeService;
 import application.service.WordManager;
 
+import java.util.List;
+
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
-
-
 @RestController
-@RequestMapping("/api/test")
+@RequestMapping("/test")
 public class TestController {
     private final WordManager wordManager;
     private final AnalyzeService analyzeService;
@@ -34,10 +35,20 @@ public class TestController {
         );
     }
 
-    @PostMapping("/submit")
+    @PostMapping("/results")
     public AnalyzeResponse submitTest(@RequestBody AnalyzeRequest request) {
         AnalyzeResponse response = analyzeService.submitResult(request);
         return response;
+    }
+    
+    @GetMapping("/results")
+    public List<AnalyzeResponse> getAllResults() {
+        return analyzeService.findAllResults();
+    }
+
+    @GetMapping("/results/{id}")
+    public AnalyzeResponse getResultById(@PathVariable Long id) {
+        return analyzeService.findResultById(id);
     }
     
     

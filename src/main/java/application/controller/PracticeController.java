@@ -19,7 +19,7 @@ import application.service.WeaknessService;
 
 
 @RestController
-@RequestMapping("/api/practice")
+@RequestMapping("/practice")
 public class PracticeController {
     private final AnalyzeService analyzeService;
     private final PracticeService practiceService;
