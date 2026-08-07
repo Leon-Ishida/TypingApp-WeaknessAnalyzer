@@ -3,8 +3,8 @@ package application.controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import application.dto.AnalyzeRequest;
-import application.dto.AnalyzeResponse;
+import application.dto.TestResultRequest;
+import application.dto.TestResultResponse;
 import application.dto.TestStartResponse;
 import application.service.AnalyzeService;
 import application.service.WordManager;
@@ -36,18 +36,18 @@ public class TestController {
     }
 
     @PostMapping("/results")
-    public AnalyzeResponse submitTest(@RequestBody AnalyzeRequest request) {
-        AnalyzeResponse response = analyzeService.submitResult(request);
+    public TestResultResponse submitTest(@RequestBody TestResultRequest request) {
+        TestResultResponse response = analyzeService.submitResult(request);
         return response;
     }
     
     @GetMapping("/results")
-    public List<AnalyzeResponse> getAllResults() {
+    public List<TestResultResponse> getAllResults() {
         return analyzeService.findAllResults();
     }
 
     @GetMapping("/results/{id}")
-    public AnalyzeResponse getResultById(@PathVariable Long id) {
+    public TestResultResponse getResultById(@PathVariable Long id) {
         return analyzeService.findResultById(id);
     }
     
