@@ -10,7 +10,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import application.dto.PracticeStartResponse;
-import application.dto.WeaknessResponse;
 import application.model.PracticeWords;
 import application.service.AnalyzeService;
 import application.service.PracticeService;
@@ -23,7 +22,6 @@ import application.service.WeaknessService;
 public class PracticeController {
     private final AnalyzeService analyzeService;
     private final PracticeService practiceService;
-    private final WeaknessService weaknessService;
 
     public PracticeController(
         AnalyzeService analyzeService,
@@ -32,12 +30,6 @@ public class PracticeController {
     ) {
         this.analyzeService = analyzeService;
         this.practiceService = practiceService;
-        this.weaknessService = weaknessService;
-    }
-    
-    @GetMapping("/weakness")
-    public WeaknessResponse getWeakness() {
-        return weaknessService.analyzeWeakness();
     }
 
     @GetMapping("/start")
