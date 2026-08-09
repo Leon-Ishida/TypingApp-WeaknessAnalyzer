@@ -5,40 +5,32 @@ import java.util.NoSuchElementException;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import application.dto.PracticeStartResponse;
-import application.model.PracticeWords;
-import application.service.AnalyzeService;
+import application.dto.PracticeGenerateRequest;
 import application.service.PracticeService;
-import application.service.WeaknessService;
+import jakarta.validation.Valid;
+
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+
 
 
 
 @RestController
 @RequestMapping("/practice")
 public class PracticeController {
-    private final AnalyzeService analyzeService;
     private final PracticeService practiceService;
 
-    public PracticeController(
-        AnalyzeService analyzeService,
-        PracticeService practiceService,
-        WeaknessService weaknessService
-    ) {
-        this.analyzeService = analyzeService;
+    public PracticeController(PracticeService practiceService) {
         this.practiceService = practiceService;
     }
 
-    @GetMapping("/start")
-    public PracticeStartResponse startPractice() {
-        PracticeWords practiceWords = practiceService.generatePracticeWords(List.of(analyzeService.findLastResult()));
-        return new PracticeStartResponse(
-            practiceWords.weaknessWords(),
-            practiceWords.frequentMistakeWords()
-        );
+    @Valid
+    @PostMapping("/start")
+    public List<String> startPractice(@RequestBody PracticeGenerateRequest request) {
+        return practiceService.generatePracticeWords(request);
     }
     
     @ExceptionHandler(NoSuchElementException.class)

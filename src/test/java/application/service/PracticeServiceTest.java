@@ -4,9 +4,11 @@ import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.when;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -22,16 +24,22 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import application.dto.PracticeGenerateRequest;
+import application.entity.TestResultEntity;
 import application.model.MistakeDetail;
 import application.model.MistakeType;
-import application.model.PracticeWords;
+import application.model.PracticeMode;
 import application.model.TestResult;
 import application.model.WordResult;
+import application.repository.TestResultRepository;
 
 @ExtendWith(MockitoExtension.class)
 public class PracticeServiceTest {
     @Mock
     private WordManager mockWordManager;
+
+    @Mock
+    private TestResultRepository repository;
 
     @InjectMocks
     private PracticeService practiceService;
@@ -237,22 +245,8 @@ public class PracticeServiceTest {
     }
 
     @Test
-    @DisplayName("入力がnullまたは空の場合、どちらの練習単語もランダムな単語が10個含まれること")
+    @DisplayName("入力が空の場合、どちらの練習単語もランダムな単語が10個含まれること")
     void testNonOrNullData() {
-        //入力がnullの時
-        List<String> weaknessWordsOfNull = setupWeaknessWords(null);
-        List<String> frequentWordsOfNull = setupFrequentWords(null);
-        List<String> removeDummyWeaknessWordsOfNull = removeDummy(weaknessWordsOfNull);
-        List<String> removeDummyFrequentWordsOfNull = removeDummy(frequentWordsOfNull);
-
-        assertAll("null入力時の単語リスト検証",
-            () -> assertEquals(10, weaknessWordsOfNull.size(), "弱点克服練習単語は10件であるべき"),
-            () -> assertEquals(10, frequentWordsOfNull.size(), "頻出ミス単語は10件であるべき"),
-            () -> assertEquals(0, removeDummyWeaknessWordsOfNull.size(), "弱点克服練習単語はすべてダミーであるべき"),
-            () -> assertEquals(0, removeDummyFrequentWordsOfNull.size(), "頻出ミス単語はすべてダミーであるべき")
-        );
-
-        //入力が空の時
         List<String> weaknessWordsOfNon = setupWeaknessWords(Collections.emptyList());
         List<String> frequentWordsOfNon = setupFrequentWords(Collections.emptyList());
         List<String> removeDummyWeaknessWordsOfNon = removeDummy(weaknessWordsOfNon);
@@ -322,8 +316,9 @@ public class PracticeServiceTest {
     }
 
     private List<String> setupWeaknessWords(List<TestResult> results) {
-        PracticeWords result = practiceService.generatePracticeWords(results);
-        List<String> weaknessWords = result.weaknessWords();
+        setupMockRepository(results);
+        PracticeGenerateRequest request = new PracticeGenerateRequest(LocalDate.of(2026, 8, 8), LocalDate.of(2026, 8, 9), PracticeMode.WEAKNESS);
+        List<String> weaknessWords = practiceService.generatePracticeWords(request);
         return weaknessWords;
     }
 
@@ -344,8 +339,19 @@ public class PracticeServiceTest {
     }
 
     private List<String> setupFrequentWords(List<TestResult> results) {
-        PracticeWords result = practiceService.generatePracticeWords(results);
-        List<String> frequentWords = result.frequentMistakeWords();
+        setupMockRepository(results);
+        PracticeGenerateRequest request = new PracticeGenerateRequest(LocalDate.of(2026, 8, 8), LocalDate.of(2026, 8, 9), PracticeMode.FREQUENT);
+        List<String> frequentWords = practiceService.generatePracticeWords(request);
         return frequentWords;
+    }
+
+    private void setupMockRepository(List<TestResult> results) {
+        List<TestResultEntity> mockEntities = new ArrayList<>();
+        for (TestResult result : results) {
+            mockEntities.add(TestResultEntity.fromRecord(result));
+        }
+
+        when(repository.findByTimestampGreaterThanEqualAndSmallerThanOrderByTimestamp(any(), any()))
+            .thenReturn(mockEntities);
     }
 }

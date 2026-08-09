@@ -1,12 +1,15 @@
 package application.service;
 
-import application.model.PracticeWords;
 import application.model.TestResult;
+import application.repository.TestResultRepository;
 import application.service.WeaknessAnalyzer.InsertionPair;
 import application.service.WeaknessAnalyzer.SubstitutionPair;
 import application.service.WeaknessAnalyzer.TranspositionPair;
+import application.dto.PracticeGenerateRequest;
+import application.entity.TestResultEntity;
 import application.model.AppConfig;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -26,34 +29,42 @@ import org.springframework.stereotype.Service;
 @Service
 public class PracticeService {
     private final WordManager wordManager;
+    private final TestResultRepository repository;
     //各ミスの種類ごとに起こりやすいミスの第何位まで取るか決める定数
     private static final int WEAKNESS_ANALYSIS_LIMIT = 3;
     //各ミスの種類ごとSetに格納する単語数を決める定数
     private static final int ADD_LIMIT_FOR_SET = 3;
 
     //wordManagerを設定する
-    public PracticeService(WordManager wordManager) {
+    public PracticeService(WordManager wordManager, TestResultRepository repository) {
         this.wordManager = wordManager;
+        this.repository = repository;
     }
 
-    /**
-     * 2つ作った練習用リストをPracticeWordsというデータクラスに格納するメソッド
-     * @param targetResult 練習問題を作成するためにミスを調べる対象となるリスト
-     * @return 各ミスの種類ごとに起こりやすいミスを含んだ単語リストと頻繁にミスした単語リストを格納したPracticeWordsオブジェクト
-     */
-    public PracticeWords generatePracticeWords(List<TestResult> targetResult) {
-        WeaknessAnalyzer weaknessAnalyzer = new WeaknessAnalyzer(targetResult);
-        List<String> weaknessWords = generateWeaknessWords(weaknessAnalyzer);
-        List<String> frequentMistakeWords = generateFrequentWords(targetResult);
-        return new PracticeWords(weaknessWords, frequentMistakeWords);
+    public List<String> generatePracticeWords(PracticeGenerateRequest request) {
+        // 選択した期間の記録のみを抽出する
+        LocalDateTime startDateTime = request.startDate().atStartOfDay();
+        LocalDateTime lastDateTime = request.lastDate().plusDays(1).atStartOfDay();
+        List<TestResultEntity> selectedRecords = repository.findByTimestampGreaterThanEqualAndSmallerThanOrderByTimestamp(startDateTime, lastDateTime);
+        
+        List<TestResult> testResults = new ArrayList<>();
+        for (TestResultEntity record : selectedRecords) {
+            testResults.add(record.toRecord());
+        }
+
+        return switch (request.mode()) {
+            case WEAKNESS -> generateWeaknessWords(testResults); // 指定した期間の中で各ミスの種類ごとに起こりやすいミスを含んだ単語リストを返す
+            case FREQUENT -> generateFrequentWords(testResults); // 指定した期間の中でミスの頻度が多い単語リスト返す
+        };
     }
 
     /**
      * 各ミスの種類ごとに起こりやすいミスを含んだ単語リストを作るメソッド
-     * @param weaknessAnalyzer 各ミスの種類ごとに起こりやすいミスを調べる引数
+     * @param targetResult 指定した期間のテスト結果が格納されたリスト
      * @return 各ミスの種類ごとに起こりやすいミスを含んだ単語リスト
      */
-    private List<String> generateWeaknessWords(WeaknessAnalyzer weaknessAnalyzer) {
+    private List<String> generateWeaknessWords(List<TestResult> targetResult) {
+        WeaknessAnalyzer weaknessAnalyzer = new WeaknessAnalyzer(targetResult);
         Set<String> resultSet = new HashSet<>();
 
         //置換ミスのミスの傾向を調べ、それに対応した単語を単語リストのSetに格納する
@@ -187,7 +198,7 @@ public class PracticeService {
 
     /**
      * ミスの頻度が多い単語リストを作るメソッド
-     * @param targetResult 全期間の結果のリスト
+     * @param targetResult 指定した期間のテスト結果が格納されたリスト
      * @return 探した単語を格納したSet
      */
     private List<String> generateFrequentWords(List<TestResult> targetResult) {

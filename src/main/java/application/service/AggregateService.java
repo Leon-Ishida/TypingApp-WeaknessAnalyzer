@@ -31,9 +31,9 @@ public class AggregateService {
 
     public PeriodAnalyzeResponse makeAggregatedInfo(PeriodAnalyzeRequest request) {
         // 選択した期間の記録のみを抽出する
-        LocalDateTime beginDateTime = request.beginDate().atStartOfDay();
-        LocalDateTime endDateTime = request.endDate().atStartOfDay();
-        List<TestResultEntity> selectedRecords = repository.findByTimestampGreaterThanEqualAndSmallerThanOrderByTimestamp(beginDateTime, endDateTime);
+        LocalDateTime startDateTime = request.startDate().atStartOfDay();
+        LocalDateTime lastDateTime = request.lastDate().plusDays(1).atStartOfDay();
+        List<TestResultEntity> selectedRecords = repository.findByTimestampGreaterThanEqualAndSmallerThanOrderByTimestamp(startDateTime, lastDateTime);
 
         // 選択した期間のwpmおよび正答率の推移をListにまとめる
         // 選択した期間の記録が30件より多いなら日にちごとの平均の推移を返す

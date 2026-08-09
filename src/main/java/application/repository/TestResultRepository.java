@@ -12,5 +12,5 @@ import java.time.LocalDateTime;
 public interface TestResultRepository extends JpaRepository<TestResultEntity, Long> {
     Optional<TestResultEntity> findTopByOrderByIdDesc();
 
-    List<TestResultEntity> findByTimestampGreaterThanEqualAndSmallerThanOrderByTimestamp(LocalDateTime beginDateTime, LocalDateTime endDateTime);
+    List<TestResultEntity> findByTimestampGreaterThanEqualAndSmallerThanOrderByTimestamp(LocalDateTime startDateTime, LocalDateTime lastDateTime);
 }
