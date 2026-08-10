@@ -351,7 +351,7 @@ public class PracticeServiceTest {
             mockEntities.add(TestResultEntity.fromRecord(result));
         }
 
-        when(repository.findByTimestampGreaterThanEqualAndSmallerThanOrderByTimestamp(any(), any()))
+        when(repository.findByTimestampGreaterThanEqualAndTimestampLessThanOrderByTimestamp(any(), any()))
             .thenReturn(mockEntities);
     }
 }

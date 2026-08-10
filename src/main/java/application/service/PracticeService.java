@@ -42,10 +42,18 @@ public class PracticeService {
     }
 
     public List<String> generatePracticeWords(PracticeGenerateRequest request) {
+        LocalDateTime startDateTime;
+        LocalDateTime lastDateTime;
+        List<TestResultEntity> selectedRecords;
+        if (request.startDate() != null) {
         // 選択した期間の記録のみを抽出する
-        LocalDateTime startDateTime = request.startDate().atStartOfDay();
-        LocalDateTime lastDateTime = request.lastDate().plusDays(1).atStartOfDay();
-        List<TestResultEntity> selectedRecords = repository.findByTimestampGreaterThanEqualAndSmallerThanOrderByTimestamp(startDateTime, lastDateTime);
+            startDateTime = request.startDate().atStartOfDay();
+            lastDateTime = request.lastDate().plusDays(1).atStartOfDay();
+            selectedRecords = repository.findByTimestampGreaterThanEqualAndTimestampLessThanOrderByTimestamp(startDateTime, lastDateTime);
+        } else {
+            // 指定がない場合全期間の記録を抽出する
+            selectedRecords = repository.findAllByOrderByTimestamp();
+        }
         
         List<TestResult> testResults = new ArrayList<>();
         for (TestResultEntity record : selectedRecords) {
