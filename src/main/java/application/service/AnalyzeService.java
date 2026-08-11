@@ -5,8 +5,8 @@ import java.util.NoSuchElementException;
 
 import org.springframework.stereotype.Service;
 
-import application.dto.AnalyzeRequest;
-import application.dto.AnalyzeResponse;
+import application.dto.TestResultRequest;
+import application.dto.TestResultResponse;
 import application.entity.TestResultEntity;
 import application.model.TestResult;
 import application.repository.TestResultRepository;
@@ -22,9 +22,9 @@ public class AnalyzeService {
         this.repository = repository;
     }
 
-    public AnalyzeResponse analyzeResult(AnalyzeRequest request) {
+    public TestResultResponse analyzeResult(TestResultRequest request) {
         TestResult result = makeTestResult(request);
-        return new AnalyzeResponse(
+        return new TestResultResponse(
             null,
             result.timestamp(),
             result.results(),
@@ -33,10 +33,12 @@ public class AnalyzeService {
         );
     }
 
-    public AnalyzeResponse submitResult(AnalyzeRequest request) {
+    public TestResultResponse submitResult(TestResultRequest request) {
         TestResult result = makeTestResult(request);
         TestResultEntity entity = TestResultEntity.fromRecord(result);
-        repository.save(entity);
+        if (request.isTest()) {
+            repository.save(entity);
+        }
         return translateFromEntity(entity);
     }
 
@@ -46,23 +48,23 @@ public class AnalyzeService {
         return lastResultEntity.toRecord();
     }
 
-    public List<AnalyzeResponse> findAllResults() {
+    public List<TestResultResponse> findAllResults() {
         List<TestResultEntity> allResults = repository.findAll();
         return allResults.stream().map(this::translateFromEntity).toList();
     }
 
-    public AnalyzeResponse findResultById(Long id) {
+    public TestResultResponse findResultById(Long id) {
         TestResultEntity entity = repository.findById(id)
             .orElseThrow(() -> new NoSuchElementException("一致するIdが存在しません"));
         return translateFromEntity(entity);
     }
 
-    private TestResult makeTestResult(AnalyzeRequest request) {
+    private TestResult makeTestResult(TestResultRequest request) {
         return analyzer.analyze(request.rawResult(), request.usedTimeMillis());
     }
 
-    private AnalyzeResponse translateFromEntity(TestResultEntity entity) {
-        return new AnalyzeResponse(
+    private TestResultResponse translateFromEntity(TestResultEntity entity) {
+        return new TestResultResponse(
             entity.getId(),
             entity.getTimestamp(),
             entity.toRecord().results(),

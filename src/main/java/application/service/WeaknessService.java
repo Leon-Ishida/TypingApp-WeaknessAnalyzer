@@ -5,7 +5,7 @@ import java.util.Map;
 
 import org.springframework.stereotype.Service;
 
-import application.dto.WeaknessResponse;
+import application.model.MistakeTopTrends;
 import application.model.TestResult;
 import application.service.WeaknessAnalyzer.InsertionPair;
 import application.service.WeaknessAnalyzer.SubstitutionPair;
@@ -19,7 +19,7 @@ public class WeaknessService {
         this.analyzeService = analyzeService;
     }
 
-    public WeaknessResponse analyzeWeakness() {
+    public MistakeTopTrends analyzeWeakness() {
         TestResult lastResult = analyzeService.findLastResult();
         WeaknessAnalyzer analyzer = new WeaknessAnalyzer(List.of(lastResult));
 
@@ -28,6 +28,6 @@ public class WeaknessService {
         Map<Character, Long> topDel = analyzer.findTopDeletionMistakes(3);
         Map<InsertionPair, Long> topIns = analyzer.findTopInsertionMistakes(3);
 
-        return new WeaknessResponse(topSub, topTrans, topDel, topIns);
+        return new MistakeTopTrends(topSub, topTrans, topDel, topIns);
     }
 }

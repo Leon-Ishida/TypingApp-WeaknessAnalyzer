@@ -5,10 +5,10 @@ import java.util.LinkedHashMap;
 
 import application.model.WordResult;
 
-public record AnalyzeResponse(
+public record TestResultResponse(
     Long id,
     LocalDateTime timestamp,
-    LinkedHashMap<String, WordResult> results,
+    LinkedHashMap<String, WordResult> analyzedResult,
     double wpm,
     double accuracy
 ) {}

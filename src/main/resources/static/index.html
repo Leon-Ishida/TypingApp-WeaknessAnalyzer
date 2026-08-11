@@ -4,110 +4,204 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>TypingApp</title>
-  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Noto+Sans+JP:wght@400;500&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="style.css" />
+  <link rel="icon" href="data:,">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body { font-family: 'Noto Sans JP', sans-serif; background-color: #f9fafb; color: #111827; }
+    .mono { font-family: 'JetBrains Mono', monospace; }
+    .nav-active { border-bottom: 2px solid #3b82f6; color: #3b82f6; font-weight: 600; }
+    .view { display: none; }
+    .view.active { display: block; }
+    
+    .typing-input {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 2rem;
+      text-align: center;
+      letter-spacing: 0.1em;
+      transition: all 0.2s;
+    }
+    .typing-input:focus { outline: none; border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3); }
+    .typing-input.correct { background-color: #dcfce7; border-color: #22c55e; color: #15803d; }
+    .typing-input.wrong { background-color: #fee2e2; border-color: #ef4444; color: #b91c1c; }
+    
+    .mistake-tag { display: inline-block; padding: 0.125rem 0.5rem; font-size: 0.75rem; border-radius: 9999px; font-family: 'JetBrains Mono', monospace; margin-right: 0.25rem; }
+    .mistake-sub { background-color: #fef08a; color: #854d0e; }
+    .mistake-trans { background-color: #fed7aa; color: #c2410c; }
+    .mistake-del { background-color: #fecaca; color: #b91c1c; }
+    .mistake-ins { background-color: #bfdbfe; color: #1d4ed8; }
+  </style>
 </head>
-<body>
-<div id="app">
+<body class="min-h-screen flex flex-col">
 
-  <!-- ─── START SCREEN ─── -->
-  <div id="screen-start" class="screen active">
-    <div class="card">
-      <p class="logo">Typing<span>App</span></p>
-      <p class="tagline">ミスの傾向を分析し、弱点を克服するタイピング練習</p>
+  <header class="bg-white shadow-sm sticky top-0 z-10">
+    <div class="max-w-5xl mx-auto px-4 h-16 flex items-center justify-between">
+      <div class="flex items-center gap-8">
+        <h1 class="text-xl font-bold tracking-tight text-gray-900">Typing<span class="text-blue-600">App</span></h1>
+        <nav class="flex gap-6 h-16">
+          <button class="nav-btn nav-active h-full px-1 text-gray-600 hover:text-blue-600 transition-colors" data-target="view-test">テスト</button>
+          <button class="nav-btn h-full px-1 text-gray-600 hover:text-blue-600 transition-colors" data-target="view-analysis">弱点分析</button>
+          <button class="nav-btn h-full px-1 text-gray-600 hover:text-blue-600 transition-colors" data-target="view-practice">練習</button>
+        </nav>
+      </div>
+      <div class="flex items-center gap-4">
+        <span id="auth-status" class="text-sm text-gray-500">未ログイン</span>
+        <button id="btn-toggle-login" class="text-sm font-medium text-blue-600 hover:text-blue-800 border border-blue-600 rounded px-3 py-1 transition-colors">ログインする</button>
+      </div>
+    </div>
+  </header>
 
-      <div class="meta-grid">
-        <div class="meta-item">
-          <span class="meta-value">10</span>
-          <p class="label meta-key">問題数</p>
+  <main class="flex-1 max-w-5xl mx-auto w-full p-4 md:p-8">
+    <div id="view-test" class="view active">
+      <div id="test-start-ui" class="max-w-xl mx-auto bg-white rounded-xl shadow-sm border border-gray-100 p-8 text-center">
+        <h2 class="text-2xl font-bold mb-2">タイピングテスト</h2>
+        <p class="text-gray-500 mb-8">ミスの傾向を分析し、弱点を克服するためのテストです。</p>
+        <button id="btn-start-test" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-8 rounded-lg shadow-md transition-transform transform active:scale-95">テストを開始する</button>
+      </div>
+    </div>
+
+    <div id="test-active-ui" class="hidden max-w-2xl mx-auto bg-white rounded-xl shadow-sm border border-gray-100 p-8">
+        <div class="flex justify-between text-sm font-medium text-gray-500 mb-2">
+          <span id="test-progress-label">0 / 10</span>
+          <span id="test-elapsed-label">00:00</span>
         </div>
-        <div class="meta-item">
-          <span class="meta-value">英単語</span>
-          <p class="label meta-key">出題形式</p>
+        <div class="h-2 bg-gray-100 rounded-full mb-10 overflow-hidden">
+          <div id="test-progress-fill" class="h-full bg-blue-500 transition-all duration-300" style="width: 0%"></div>
         </div>
-        <div class="meta-item">
-          <span class="meta-value">4種</span>
-          <p class="label meta-key">ミス分類</p>
+        <div class="text-center">
+          <p id="test-word-display" class="mono text-4xl text-gray-800 mb-8 tracking-wider"></p>
+          <input type="text" id="test-input" class="typing-input w-full max-w-sm mx-auto border-2 border-gray-200 rounded-lg p-3 bg-gray-50" autocomplete="off" spellcheck="false" placeholder="Type here..." />
+          <p class="text-xs text-gray-400 mt-4">Enterキーで次の単語へ</p>
         </div>
       </div>
 
-      <div id="error-banner"></div>
-
-      <button class="btn btn-primary" id="btn-start" onclick="startTest()">
-        テスト開始
-      </button>
-    </div>
-  </div>
-
-  <!-- ─── TEST SCREEN ─── -->
-  <div id="screen-test" class="screen">
-    <div class="test-header">
-      <span class="label" id="progress-label">0 / 10</span>
-      <span class="label" id="elapsed-label">00:00</span>
-    </div>
-
-    <div class="progress-bar-wrap">
-      <div class="progress-bar-fill" id="progress-fill" style="width:0%"></div>
-    </div>
-
-    <div class="card">
-      <p class="word-display" id="word-display"></p>
-
-      <div class="input-wrap">
-        <input
-          type="text"
-          id="typing-input"
-          autocomplete="off"
-          autocorrect="off"
-          autocapitalize="off"
-          spellcheck="false"
-          placeholder="ここに入力..."
-          onkeydown="handleKeydown(event)"
-        />
-      </div>
-      <p class="hint">Enter で次の問題へ</p>
-    </div>
-  </div>
-
-  <!-- ─── RESULT SCREEN ─── -->
-  <div id="screen-result" class="screen">
-    <div class="card">
-      <p class="result-headline label">// 結果</p>
-
-      <div class="stat-row">
-        <div class="stat-cell">
-          <span class="stat-num" id="result-wpm">--</span>
-          <span class="stat-unit">WPM</span>
-          <p class="label" style="margin-top:.25rem">ネット WPM</p>
+      <div id="test-result-ui" class="hidden max-w-3xl mx-auto space-y-6">
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-8 text-center relative overflow-hidden">
+          <div id="guest-warning" class="bg-amber-50 text-amber-800 text-sm py-2 px-4 rounded-md mb-6 inline-block border border-amber-200">
+            ログインすると記録を保存できます。セッション維持のため30分以内にログインしてください。
+          </div>
+          <h2 class="text-2xl font-bold mb-6">テスト結果</h2>
+          <div class="flex justify-center gap-12">
+            <div>
+              <p class="text-5xl font-bold text-gray-900 mono" id="res-wpm">--</p>
+              <p class="text-sm text-gray-500 mt-1 font-medium">WPM</p>
+            </div>
+            <div>
+              <p class="text-5xl font-bold text-gray-900 mono" id="res-acc">--<span class="text-2xl">%</span></p>
+              <p class="text-sm text-gray-500 mt-1 font-medium">正答率</p>
+            </div>
+          </div>
+          <div class="mt-8 flex justify-center gap-4">
+            <button id="btn-retry-test" class="px-6 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded-lg transition-colors">もう一度</button>
+            <button id="btn-go-analysis" class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors shadow-sm">弱点分析へ</button>
+          </div>
         </div>
-        <div class="stat-cell">
-          <span class="stat-num" id="result-acc">--</span>
-          <span class="stat-unit">%</span>
-          <p class="label" style="margin-top:.25rem">正答率</p>
+
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+          <table class="w-full text-left text-sm">
+            <thead class="bg-gray-50 border-b border-gray-100 text-gray-600">
+              <tr>
+                <th class="py-3 px-4 font-medium">問題</th>
+                <th class="py-3 px-4 font-medium">あなたの解答</th>
+                <th class="py-3 px-4 font-medium">判定</th>
+                <th class="py-3 px-4 font-medium">ミスの詳細</th>
+              </tr>
+            </thead>
+            <tbody id="res-tbody" class="divide-y divide-gray-100"></tbody>
+          </table>
         </div>
       </div>
 
-      <p class="label word-table-title">単語ごとの結果</p>
-      <table class="word-table">
-        <thead>
-          <tr>
-            <th>問題</th>
-            <th>解答</th>
-            <th>判定</th>
-            <th>ミスの詳細</th>
-          </tr>
-        </thead>
-        <tbody id="result-tbody"></tbody>
-      </table>
+    <div id="view-analysis" class="view space-y-6">
+      <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+        <h2 class="text-xl font-bold mb-4">分析期間の選択</h2>
+        <div class="flex flex-wrap items-end gap-4">
+          <div>
+            <label class="block text-xs text-gray-500 mb-1">開始日</label>
+            <input type="date" id="analysis-start-date" class="border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-blue-500 disabled:bg-gray-100 disabled:text-gray-400" />
+          </div>
+          <div>
+            <label class="block text-xs text-gray-500 mb-1">終了日</label>
+            <input type="date" id="analysis-end-date" class="border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-blue-500 disabled:bg-gray-100 disabled:text-gray-400" />
+          </div>
+          <button id="btn-load-analysis" class="bg-gray-800 hover:bg-gray-900 text-white px-6 py-2 rounded font-medium text-sm transition-colors disabled:opacity-50">分析データを更新</button>
+        </div>
+        <p id="analysis-auth-note" class="text-xs text-red-500 mt-2 hidden">※ 期間指定機能を利用するにはログインが必要です。</p>
+      </div>
 
-      <div class="result-actions">
-        <button class="btn btn-secondary" onclick="goToStart()">もう一度</button>
-        <a href="weakness.html" class="btn btn-primary">弱点を分析する</a>
+      <div id="analysis-content" class="hidden space-y-6">
+        <div class="grid md:grid-cols-2 gap-6">
+          <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+            <h3 class="font-bold text-gray-800 mb-4">WPMの推移 (直近10回)</h3>
+            <div class="relative h-64 w-full">
+              <canvas id="wpm-chart"></canvas>
+            </div>
+          </div>
+          <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+            <h3 class="font-bold text-gray-800 mb-4">正答率の推移 (直近10回)</h3>
+            <div class="relative h-64 w-full">
+              <canvas id="acc-chart"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+          <h3 class="font-bold text-gray-800 mb-4">ミスの傾向別 Top3</h3>
+          <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-4" id="mistake-tops-container">
+          </div>
+        </div>
+        
+        <div class="text-center mt-8">
+          <button id="btn-analysis-to-practice" class="bg-blue-600 hover:bg-blue-700 text-white font-medium px-8 py-3 rounded-lg shadow-sm transition-transform active:scale-95">この結果をもとに練習する</button>
+        </div>
+      </div>
+      
+      <div id="analysis-empty" class="hidden bg-white rounded-xl shadow-sm border border-gray-100 p-12 text-center text-gray-500">
+        分析するデータがありません。テストを完了してください。
       </div>
     </div>
-  </div>
 
-</div>
-<script src="app.js"></script>
+    <div id="view-practice" class="view space-y-6">
+      <div id="practice-setup-ui">
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-8 max-w-2xl mx-auto">
+          <h2 class="text-2xl font-bold mb-2 text-center">弱点克服練習</h2>
+          <p class="text-sm text-gray-500 text-center mb-8">過去のデータから、あなたに最適な練習問題を出題します。</p>
+          
+          <div class="space-y-6">
+            <div>
+              <label class="block font-medium text-gray-700 mb-2">1. 抽出対象期間</label>
+              <div class="flex gap-4">
+                <input type="date" id="practice-start-date" class="border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-blue-500 disabled:bg-gray-100 disabled:text-gray-400" />
+                <span class="self-center text-gray-400">〜</span>
+                <input type="date" id="practice-end-date" class="border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-blue-500 disabled:bg-gray-100 disabled:text-gray-400" />
+              </div>
+              <p id="practice-auth-note" class="text-xs text-red-500 mt-1 hidden">※ 未ログイン時は全期間が対象となります。</p>
+            </div>
+            
+            <div>
+              <label class="block font-medium text-gray-700 mb-2">2. 練習モード</label>
+              <div class="grid grid-cols-2 gap-4">
+                <label class="border-2 border-gray-200 rounded-lg p-4 cursor-pointer hover:border-blue-200 transition-colors has-[:checked]:border-blue-600 has-[:checked]:bg-blue-50">
+                  <input type="radio" name="practice_mode" value="WEAKNESS" class="sr-only" checked>
+                  <div class="font-bold text-blue-900 mb-1">特定ミス集中</div>
+                  <div class="text-xs text-gray-500">間違いの多いパターンの単語を集中的に練習</div>
+                </label>
+                <label class="border-2 border-gray-200 rounded-lg p-4 cursor-pointer hover:border-blue-200 transition-colors has-[:checked]:border-blue-600 has-[:checked]:bg-blue-50">
+                  <input type="radio" name="practice_mode" value="FREQUENT" class="sr-only">
+                  <div class="font-bold text-blue-900 mb-1">頻出ミス単語</div>
+                  <div class="text-xs text-gray-500">純粋にミスした回数が多い単語を反復練習</div>
+                </label>
+              </div>
+            </div>
+            <div class="pt-4 text-center">
+              <button id="btn-start-practice" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-12 rounded-lg shadow-md transition-transform transform active:scale-95">練習開始</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+  <script src="app.js"></script>
 </body>
 </html>
