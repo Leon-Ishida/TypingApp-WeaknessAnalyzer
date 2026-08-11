@@ -36,7 +36,9 @@ public class AnalyzeService {
     public TestResultResponse submitResult(TestResultRequest request) {
         TestResult result = makeTestResult(request);
         TestResultEntity entity = TestResultEntity.fromRecord(result);
-        repository.save(entity);
+        if (request.isTest()) {
+            repository.save(entity);
+        }
         return translateFromEntity(entity);
     }
 
