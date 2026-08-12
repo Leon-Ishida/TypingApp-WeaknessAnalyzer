@@ -11,6 +11,7 @@ import application.entity.TestResultEntity;
 import application.model.TestResult;
 import application.repository.TestResultRepository;
 import application.typingtest.TypingAnalyzer;
+import jakarta.servlet.http.HttpSession;
 
 @Service
 public class AnalyzeService {
@@ -33,9 +34,11 @@ public class AnalyzeService {
         );
     }
 
-    public TestResultResponse submitResult(TestResultRequest request) {
+    public TestResultResponse submitResult(TestResultRequest request, HttpSession session) {
         TestResult result = makeTestResult(request);
-        TestResultEntity entity = TestResultEntity.fromRecord(result);
+        // 現段階では全ユーザーは未ログインのゲストとして扱う
+        // ログイン機能実装後、ログイン状態で分岐させログインしていた場合userIdをそのユーザーのIdにする
+        TestResultEntity entity = TestResultEntity.fromRecord(null, session.getId(), result);
         if (request.isTest()) {
             repository.save(entity);
         }

@@ -25,6 +25,10 @@ public class TestResultEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    private String userId;
+
+    private String sessionId;
+
     @Column(updatable = false)
     private LocalDateTime timestamp;
 
@@ -37,7 +41,9 @@ public class TestResultEntity {
 
     protected TestResultEntity() {}
 
-    private TestResultEntity(LocalDateTime timestamp, List<WordResultEntity> wordResultEntities, double wpm, double accuracy) {
+    private TestResultEntity(String userId, String sessionId, LocalDateTime timestamp, List<WordResultEntity> wordResultEntities, double wpm, double accuracy) {
+        this.userId = userId;
+        this.sessionId = sessionId;
         this.timestamp = timestamp;
         this.wordResultEntities = wordResultEntities;
         this.wpm = wpm;
@@ -64,8 +70,10 @@ public class TestResultEntity {
         return new TestResult(timestamp, results, wpm, accuracy);
     }
 
-    public static TestResultEntity fromRecord(TestResult testResult) {
+    public static TestResultEntity fromRecord(String userId, String sessionId, TestResult testResult) {
         TestResultEntity testResultEntity = new TestResultEntity(
+            userId,
+            sessionId,
             testResult.timestamp(),
             new ArrayList<WordResultEntity>(),
             testResult.wpm(),
@@ -94,6 +102,8 @@ public class TestResultEntity {
     }
 
     public Long getId() { return id; }
+    public String getUserId() { return userId; }
+    public String getSessionId() { return sessionId; }
     public LocalDateTime getTimestamp() { return timestamp; }
     public double getWpm() { return wpm; }
     public double getAccuracy() { return accuracy; }

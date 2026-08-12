@@ -348,7 +348,7 @@ public class PracticeServiceTest {
     private void setupMockRepository(List<TestResult> results) {
         List<TestResultEntity> mockEntities = new ArrayList<>();
         for (TestResult result : results) {
-            mockEntities.add(TestResultEntity.fromRecord(result));
+            mockEntities.add(TestResultEntity.fromRecord(null, null, result));
         }
 
         when(repository.findByTimestampGreaterThanEqualAndTimestampLessThanOrderByTimestamp(any(), any()))

@@ -8,6 +8,7 @@ import application.dto.TestResultResponse;
 import application.dto.TestStartResponse;
 import application.service.AnalyzeService;
 import application.service.WordManager;
+import jakarta.servlet.http.HttpSession;
 
 import java.util.List;
 
@@ -28,7 +29,7 @@ public class TestController {
     }
 
     @GetMapping("/start")
-    public TestStartResponse startTest() {
+    public TestStartResponse startTest(HttpSession session) {
         return new TestStartResponse(
             wordManager.getTestWords(),
             System.currentTimeMillis()
@@ -36,8 +37,8 @@ public class TestController {
     }
 
     @PostMapping("/results")
-    public TestResultResponse submitTest(@RequestBody TestResultRequest request) {
-        TestResultResponse response = analyzeService.submitResult(request);
+    public TestResultResponse submitTest(@RequestBody TestResultRequest request, HttpSession session) {
+        TestResultResponse response = analyzeService.submitResult(request, session);
         return response;
     }
     
@@ -50,6 +51,4 @@ public class TestController {
     public TestResultResponse getResultById(@PathVariable Long id) {
         return analyzeService.findResultById(id);
     }
-    
-    
 }
