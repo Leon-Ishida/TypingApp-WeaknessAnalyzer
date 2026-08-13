@@ -4,8 +4,10 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.transaction.annotation.Transactional;
 
 import application.entity.TestResultEntity;
+
 import java.time.LocalDateTime;
 
 
@@ -15,4 +17,7 @@ public interface TestResultRepository extends JpaRepository<TestResultEntity, Lo
     List<TestResultEntity> findAllByOrderByTimestamp();
 
     List<TestResultEntity> findByTimestampGreaterThanEqualAndTimestampLessThanOrderByTimestamp(LocalDateTime startDateTime, LocalDateTime lastDateTime);
+
+    @Transactional
+    void deleteByUserIdIsNullAndTimestampBefore(LocalDateTime thirtyMinutestAgo);
 }
