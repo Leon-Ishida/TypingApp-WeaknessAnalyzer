@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="ja" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('テスト')}"></head>
+<body class="min-h-screen flex flex-col">
+    <header th:replace="~{fragments/layout :: header('test')}"></header>
+
+    <main class="flex-1 max-w-5xl mx-auto w-full p-4 md:p-8">
+        <!-- 元の <div id="view-test"> の中身をそのまま配置 -->
+        <div id="test-start-ui" class="max-w-xl mx-auto bg-white rounded-xl shadow-sm border border-gray-100 p-8 text-center">
+            <h2 class="text-2xl font-bold mb-2">タイピングテスト</h2>
+            <p class="text-gray-500 mb-8">ミスの傾向を分析し、弱点を克服するためのテストです。</p>
+            <button id="btn-start-test" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-8 rounded-lg shadow-md transition-transform transform active:scale-95">テストを開始する</button>
+        </div>
+
+        <div id="test-active-ui" class="hidden max-w-2xl mx-auto bg-white rounded-xl shadow-sm border border-gray-100 p-8">
+            <div class="flex justify-between text-sm font-medium text-gray-500 mb-2">
+                <span id="test-progress-label">0 / 10</span>
+                <span id="test-elapsed-label">00:00</span>
+            </div>
+            <div class="h-2 bg-gray-100 rounded-full mb-10 overflow-hidden">
+                <div id="test-progress-fill" class="h-full bg-blue-500 transition-all duration-300" style="width: 0%"></div>
+            </div>
+            <div class="text-center">
+                <p id="test-word-display" class="mono text-4xl text-gray-800 mb-8 tracking-wider"></p>
+                <input type="text" id="test-input" class="typing-input w-full max-w-sm mx-auto border-2 border-gray-200 rounded-lg p-3 bg-gray-50" autocomplete="off" spellcheck="false" placeholder="Type here..." />
+                <p class="text-xs text-gray-400 mt-4">Enterキーで次の単語へ</p>
+            </div>
+        </div>
+
+        <div id="test-result-ui" class="hidden max-w-3xl mx-auto space-y-6">
+            <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-8 text-center relative overflow-hidden">
+                <h2 class="text-2xl font-bold mb-6">テスト結果</h2>
+                <div class="flex justify-center gap-12">
+                    <div>
+                        <p class="text-5xl font-bold text-gray-900 mono" id="res-wpm">--</p>
+                        <p class="text-sm text-gray-500 mt-1 font-medium">WPM</p>
+                    </div>
+                    <div>
+                        <p class="text-5xl font-bold text-gray-900 mono" id="res-acc">--<span class="text-2xl">%</span></p>
+                        <p class="text-sm text-gray-500 mt-1 font-medium">正答率</p>
+                    </div>
+                </div>
+                <div class="mt-8 flex justify-center gap-4">
+                    <button id="btn-retry-test" class="px-6 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded-lg transition-colors">もう一度</button>
+                    <a th:href="@{/analysis}" class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors shadow-sm">弱点分析へ</a>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                <table class="w-full text-left text-sm">
+                    <thead class="bg-gray-50 border-b border-gray-100 text-gray-600">
+                        <tr>
+                            <th class="py-3 px-4 font-medium">問題</th>
+                            <th class="py-3 px-4 font-medium">あなたの解答</th>
+                            <th class="py-3 px-4 font-medium">判定</th>
+                            <th class="py-3 px-4 font-medium">ミスの詳細</th>
+                        </tr>
+                    </thead>
+                    <tbody id="res-tbody" class="divide-y divide-gray-100"></tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <!-- 共通ユーティリティとテスト用JS -->
+    <script src="/js/common.js"></script>
+    <script src="/js/test.js"></script>
+</body>
+</html>

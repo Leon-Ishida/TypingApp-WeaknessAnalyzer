@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="ja" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('弱点分析')}"></head>
+<body class="min-h-screen flex flex-col">
+    <header th:replace="~{fragments/layout :: header('analysis')}"></header>
+
+    <main class="flex-1 max-w-5xl mx-auto w-full p-4 md:p-8">
+        <div class="space-y-6">
+            <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                <h2 class="text-xl font-bold mb-4">分析期間の選択</h2>
+                <div class="flex flex-wrap items-end gap-4">
+                    <div>
+                        <label class="block text-xs text-gray-500 mb-1">開始日</label>
+                        <input type="date" id="analysis-start-date" class="border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-blue-500" />
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-500 mb-1">終了日</label>
+                        <input type="date" id="analysis-end-date" class="border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-blue-500" />
+                    </div>
+                    <button id="btn-load-analysis" class="bg-gray-800 hover:bg-gray-900 text-white px-6 py-2 rounded font-medium text-sm transition-colors">分析データを更新</button>
+                </div>
+            </div>
+
+            <div id="analysis-content" class="hidden space-y-6">
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                        <h3 class="font-bold text-gray-800 mb-4">WPMの推移 (直近10回)</h3>
+                        <div class="relative h-64 w-full">
+                            <canvas id="wpm-chart"></canvas>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                        <h3 class="font-bold text-gray-800 mb-4">正答率の推移 (直近10回)</h3>
+                        <div class="relative h-64 w-full">
+                            <canvas id="acc-chart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                    <h3 class="font-bold text-gray-800 mb-4">ミスの傾向別 Top3</h3>
+                    <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-4" id="mistake-tops-container">
+                    </div>
+                </div>
+                
+                <div class="text-center mt-8">
+                    <a th:href="@{/practice}" class="inline-block bg-blue-600 hover:bg-blue-700 text-white font-medium px-8 py-3 rounded-lg shadow-sm transition-transform active:scale-95">この結果をもとに練習する</a>
+                </div>
+            </div>
+            
+            <div id="analysis-empty" class="hidden bg-white rounded-xl shadow-sm border border-gray-100 p-12 text-center text-gray-500">
+                分析するデータがありません。テストを完了してください。
+            </div>
+        </div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="/js/common.js"></script>
+    <script src="/js/analysis.js"></script>
+</body>
+</html>

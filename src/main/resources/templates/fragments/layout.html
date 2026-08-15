@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="ja" xmlns:th="http://www.thymeleaf.org">
+<head th:fragment="head(title)">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title th:text="${title} + ' | TypingApp'">TypingApp</title>
+    
+    <!-- CSRFトークンをJSで取得できるようにメタタグに埋め込む -->
+    <meta name="_csrf" th:content="${_csrf.token}" />
+    <meta name="_csrf_header" th:content="${_csrf.headerName}" />
+
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { font-family: 'Noto Sans JP', sans-serif; background-color: #f9fafb; color: #111827; }
+        .mono { font-family: 'JetBrains Mono', monospace; }
+        .nav-active { border-bottom: 2px solid #3b82f6; color: #3b82f6; font-weight: 600; }
+        /* タイピング用の共通CSS */
+        .typing-input { font-family: 'JetBrains Mono', monospace; font-size: 2rem; text-align: center; letter-spacing: 0.1em; transition: all 0.2s; }
+        .typing-input:focus { outline: none; border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3); }
+        .typing-input.correct { background-color: #dcfce7; border-color: #22c55e; color: #15803d; }
+        .typing-input.wrong { background-color: #fee2e2; border-color: #ef4444; color: #b91c1c; }
+        .mistake-tag { display: inline-block; padding: 0.125rem 0.5rem; font-size: 0.75rem; border-radius: 9999px; font-family: 'JetBrains Mono', monospace; margin-right: 0.25rem; }
+        .mistake-sub { background-color: #fef08a; color: #854d0e; }
+        .mistake-trans { background-color: #fed7aa; color: #c2410c; }
+        .mistake-del { background-color: #fecaca; color: #b91c1c; }
+        .mistake-ins { background-color: #bfdbfe; color: #1d4ed8; }
+    </style>
+</head>
+<body>
+    <header th:fragment="header(activeNav)" class="bg-white shadow-sm sticky top-0 z-10">
+        <div class="max-w-5xl mx-auto px-4 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-8">
+                <h1 class="text-xl font-bold tracking-tight text-gray-900">Typing<span class="text-blue-600">App</span></h1>
+                <nav class="flex gap-6 h-16">
+                    <a th:href="@{/}" th:classappend="${activeNav == 'test'} ? 'nav-active' : ''" class="h-full px-1 text-gray-600 hover:text-blue-600 transition-colors flex items-center">テスト</a>
+                    <a th:href="@{/analysis}" th:classappend="${activeNav == 'analysis'} ? 'nav-active' : ''" class="h-full px-1 text-gray-600 hover:text-blue-600 transition-colors flex items-center">弱点分析</a>
+                    <a th:href="@{/practice}" th:classappend="${activeNav == 'practice'} ? 'nav-active' : ''" class="h-full px-1 text-gray-600 hover:text-blue-600 transition-colors flex items-center">練習</a>
+                </nav>
+            </div>
+            <div class="flex items-center gap-4">
+                <span th:if="${#authorization.expression('isAuthenticated()')}" class="text-sm text-gray-500" th:text="${#authentication.name} + 'さん'">ログイン中</span>
+                <span th:unless="${#authorization.expression('isAuthenticated()')}" class="text-sm text-gray-500">未ログイン</span>
+                
+                <form th:if="${#authorization.expression('isAuthenticated()')}" th:action="@{/logout}" method="post">
+                    <button type="submit" class="text-sm font-medium text-red-600 hover:text-red-800 border border-red-600 rounded px-3 py-1 transition-colors">ログアウト</button>
+                </form>
+                <a th:unless="${#authorization.expression('isAuthenticated()')}" th:href="@{/login}" class="text-sm font-medium text-blue-600 hover:text-blue-800 border border-blue-600 rounded px-3 py-1 transition-colors">ログインする</a>
+            </div>
+        </div>
+    </header>
+</body>
+</html>

@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="ja" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('ログイン')}"></head>
+<body class="min-h-screen flex flex-col">
+    <!-- ヘッダーのナビゲーションは非アクティブ状態にするため空文字を渡す -->
+    <header th:replace="~{fragments/layout :: header('')}"></header>
+
+    <main class="flex-1 max-w-5xl mx-auto w-full p-4 md:p-8 flex items-center justify-center">
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-8 w-full max-w-md">
+            <h2 class="text-2xl font-bold mb-6 text-center text-gray-800">ログイン</h2>
+            
+            <!-- Spring Securityの仕様: 認証エラー時は ?error パラメータが付与される -->
+            <div th:if="${param.error}" class="bg-red-50 text-red-600 text-sm p-3 rounded-lg mb-6 border border-red-200 text-center font-medium">
+                ユーザー名またはパスワードが間違っています。
+            </div>
+            
+            <!-- Spring Securityの仕様: ログアウト成功時は ?logout パラメータが付与される -->
+            <div th:if="${param.logout}" class="bg-blue-50 text-blue-600 text-sm p-3 rounded-lg mb-6 border border-blue-200 text-center font-medium">
+                ログアウトしました。
+            </div>
+
+            <!-- th:action を使うと自動でCSRFトークンが埋め込まれます -->
+            <form th:action="@{/login}" method="post" class="space-y-4">
+                <div>
+                    <label for="username" class="block text-sm font-medium text-gray-700 mb-1">ユーザー名</label>
+                    <input type="text" id="username" name="username" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-blue-500" required autofocus />
+                </div>
+                <div>
+                    <label for="password" class="block text-sm font-medium text-gray-700 mb-1">パスワード</label>
+                    <input type="password" id="password" name="password" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-blue-500" required />
+                </div>
+                
+                <div class="pt-4">
+                    <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg shadow transition-colors">
+                        ログイン
+                    </button>
+                </div>
+            </form>
+        </div>
+    </main>
+</body>
+</html>
