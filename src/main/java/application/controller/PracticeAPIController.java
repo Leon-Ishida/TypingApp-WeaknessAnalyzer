@@ -20,10 +20,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 @RestController
 @RequestMapping("/practice")
-public class PracticeController {
+public class PracticeAPIController {
     private final PracticeService practiceService;
 
-    public PracticeController(PracticeService practiceService) {
+    public PracticeAPIController(PracticeService practiceService) {
         this.practiceService = practiceService;
     }
 

@@ -19,11 +19,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 @RestController
 @RequestMapping("/test")
-public class TestController {
+public class TestAPIController {
     private final WordManager wordManager;
     private final AnalyzeService analyzeService;
 
-    public TestController(WordManager wordManager, AnalyzeService analyzeService) {
+    public TestAPIController(WordManager wordManager, AnalyzeService analyzeService) {
         this.wordManager = wordManager;
         this.analyzeService = analyzeService;
     }

@@ -14,10 +14,10 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
 @RestController
-public class AggregateController {
+public class AggregateAPIController {
     private final AggregateService aggregateService;
 
-    public AggregateController(AggregateService aggregateService) {
+    public AggregateAPIController(AggregateService aggregateService) {
         this.aggregateService = aggregateService;
     }
 
