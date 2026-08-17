@@ -15,11 +15,12 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/", "/js/**", "/test/**", "/aggregate").permitAll()
+                .requestMatchers("/", "/js/**", "/test/**", "/aggregate", "/register", "/auth/regist").permitAll()
                 .anyRequest().authenticated()
             )
             .formLogin(login -> login
                 .loginPage("/login")
+                .usernameParameter("email")
                 .defaultSuccessUrl("/", true)
                 .failureUrl("/login?error")
                 .permitAll()

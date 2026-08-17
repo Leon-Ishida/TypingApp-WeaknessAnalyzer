@@ -28,4 +28,12 @@ public class UserEntity {
     public String getUserName() { return userName; }
     public String getEmail() { return email; }
     public String getPassword() { return password; }
+
+    protected UserEntity() {}
+
+    public UserEntity(String userName, String email, String password) {
+        this.userName = userName;
+        this.email = email;
+        this.password = password;
+    }
 }
