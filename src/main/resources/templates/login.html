@@ -11,7 +11,7 @@
             
             <!-- Spring Securityの仕様: 認証エラー時は ?error パラメータが付与される -->
             <div th:if="${param.error}" class="bg-red-50 text-red-600 text-sm p-3 rounded-lg mb-6 border border-red-200 text-center font-medium">
-                ユーザー名またはパスワードが間違っています。
+                メールアドレスまたはパスワードが間違っています。
             </div>
             
             <!-- Spring Securityの仕様: ログアウト成功時は ?logout パラメータが付与される -->
@@ -22,8 +22,8 @@
             <!-- th:action を使うと自動でCSRFトークンが埋め込まれます -->
             <form th:action="@{/login}" method="post" class="space-y-4">
                 <div>
-                    <label for="username" class="block text-sm font-medium text-gray-700 mb-1">ユーザー名</label>
-                    <input type="text" id="username" name="username" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-blue-500" required autofocus />
+                    <label for="email" class="block text-sm font-medium text-gray-700 mb-1">メールアドレス</label>
+                    <input type="email" id="email" name="email" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-blue-500" required autofocus />
                 </div>
                 <div>
                     <label for="password" class="block text-sm font-medium text-gray-700 mb-1">パスワード</label>
@@ -35,6 +35,14 @@
                         ログイン
                     </button>
                 </div>
+                
+                <!-- 新規登録ボタン（リンク）を追記 -->
+                <div class="mt-6 text-center">
+                    <a th:href="@{/register}" class="inline-block text-sm font-medium text-blue-600 hover:text-blue-800 transition-colors">
+                        アカウントをお持ちでない方はこちら（新規登録）
+                    </a>
+                </div>
+
             </form>
         </div>
     </main>
