@@ -94,7 +94,7 @@ document.addEventListener('DOMContentLoaded', () => {
             ui.resAcc.textContent = Math.round(resultData.accuracy * 100);
             
             // テーブル描画ロジックは元のコードから移植
-            renderResultTable(resultData.results);
+            renderResultTable(resultData.analyzedResult);
             
         } catch (e) {
             alert('結果の送信に失敗しました。');
