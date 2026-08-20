@@ -39,7 +39,7 @@
                 </nav>
             </div>
             <div class="flex items-center gap-4">
-                <span th:if="${#authorization.expression('isAuthenticated()')}" class="text-sm text-gray-500" th:text="${#authentication.name} + 'さん'">ログイン中</span>
+                <span th:if="${#authorization.expression('isAuthenticated()')}" class="text-sm text-gray-500" th:text="${#authentication.principal.displayName} + 'さん'">ログイン中</span>
                 <span th:unless="${#authorization.expression('isAuthenticated()')}" class="text-sm text-gray-500">未ログイン</span>
                 
                 <form th:if="${#authorization.expression('isAuthenticated()')}" th:action="@{/logout}" method="post">
