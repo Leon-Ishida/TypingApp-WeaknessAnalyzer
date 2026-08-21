@@ -1,5 +1,6 @@
 package application.security;
 
+import java.util.UUID;
 import java.util.Collection;
 import java.util.List;
 
@@ -53,5 +54,9 @@ public class CustomUserDetails implements UserDetails {
 
     public String getDisplayName() {
         return userEntity.getUserName();
+    }
+
+    public UUID getUserId() {
+        return userEntity.getId();
     }
 }

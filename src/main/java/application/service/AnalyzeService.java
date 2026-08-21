@@ -3,6 +3,9 @@ package application.service;
 import java.util.List;
 import java.util.NoSuchElementException;
 
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import application.dto.TestResultRequest;
@@ -10,6 +13,7 @@ import application.dto.TestResultResponse;
 import application.entity.TestResultEntity;
 import application.model.TestResult;
 import application.repository.TestResultRepository;
+import application.security.CustomUserDetails;
 import application.typingtest.TypingAnalyzer;
 import jakarta.servlet.http.HttpSession;
 
@@ -36,9 +40,22 @@ public class AnalyzeService {
 
     public TestResultResponse submitResult(TestResultRequest request, HttpSession session) {
         TestResult result = makeTestResult(request);
-        // 現段階では全ユーザーは未ログインのゲストとして扱う
-        // ログイン機能実装後、ログイン状態で分岐させログインしていた場合userIdをそのユーザーのIdにする
-        TestResultEntity entity = TestResultEntity.fromRecord(null, session.getId(), result);
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        boolean isLoggedIn = (authentication != null) 
+            && (authentication.isAuthenticated()) 
+            && !(authentication instanceof AnonymousAuthenticationToken);
+
+        String userId = null;
+        if (isLoggedIn) {
+            Object principal = authentication.getPrincipal();
+            if (principal instanceof CustomUserDetails customUserDetails) {
+                userId = customUserDetails.getUserId().toString();
+            }
+        }
+
+        TestResultEntity entity = TestResultEntity.fromRecord(userId, session.getId(), result);
+        
         if (request.isTest()) {
             repository.save(entity);
         }
