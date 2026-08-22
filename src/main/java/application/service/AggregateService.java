@@ -7,6 +7,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
 import application.dto.PeriodAnalyzeRequest;
@@ -17,9 +19,11 @@ import application.model.MistakeTopTrends;
 import application.model.TestResult;
 import application.model.TestScoreTrend;
 import application.repository.TestResultRepository;
+import application.security.CustomUserDetails;
 import application.service.WeaknessAnalyzer.InsertionPair;
 import application.service.WeaknessAnalyzer.SubstitutionPair;
 import application.service.WeaknessAnalyzer.TranspositionPair;
+import jakarta.servlet.http.HttpSession;
 
 @Service
 public class AggregateService {
@@ -29,19 +33,8 @@ public class AggregateService {
         this.repository = repository;
     }
 
-    public PeriodAnalyzeResponse makeAggregatedInfo(PeriodAnalyzeRequest request) {
-        LocalDateTime startDateTime;
-        LocalDateTime lastDateTime;
-        List<TestResultEntity> selectedRecords;
-        if (request.startDate() != null) {
-        // 選択した期間の記録のみを抽出する
-            startDateTime = request.startDate().atStartOfDay();
-            lastDateTime = request.lastDate().plusDays(1).atStartOfDay();
-            selectedRecords = repository.findByTimestampGreaterThanEqualAndTimestampLessThanOrderByTimestamp(startDateTime, lastDateTime);
-        } else {
-            // 指定がない場合全期間の記録を抽出する
-            selectedRecords = repository.findAllByOrderByTimestamp();
-        }
+    public PeriodAnalyzeResponse makeAggregatedInfo(PeriodAnalyzeRequest request, Authentication authentication, HttpSession session) {
+        List<TestResultEntity> selectedRecords = resolveTargetRecords(request, authentication, session);
 
         // 選択した期間のwpmおよび正答率の推移をListにまとめる
         // 選択した期間の記録が30件より多いなら日にちごとの平均の推移を返す
@@ -97,5 +90,34 @@ public class AggregateService {
         MistakeTopTrends mistakeTrends = new MistakeTopTrends(topSub, topTrans, topDel, topIns);
 
         return new PeriodAnalyzeResponse(scoreTrends, mistakeTrends);
+    }
+
+    private List<TestResultEntity> resolveTargetRecords(PeriodAnalyzeRequest request, Authentication authentication, HttpSession session) {
+        boolean isLoggedIn = (authentication != null) 
+            && (authentication.isAuthenticated()) 
+            && !(authentication instanceof AnonymousAuthenticationToken);
+
+        String userId = null;
+        if (isLoggedIn) {
+            Object principal = authentication.getPrincipal();
+            if (principal instanceof CustomUserDetails customUserDetails) {
+                userId = customUserDetails.getUserId().toString();
+            }
+        }
+
+        if (userId != null) {
+            if (request.startDate() != null) {
+                LocalDateTime startDateTime = request.startDate().atStartOfDay();
+                LocalDateTime endDateTime = request.lastDate().plusDays(1).atStartOfDay();
+                return repository.findByUserIdAndTimestampThanGreaterThanEqualAndTimestampLessThanOrderByTimestamp(userId, startDateTime, endDateTime);
+            } else {
+                return repository.findByUserIdOrderByTimestamp(userId);
+            }
+        } else {
+            String sessionId = session.getId();
+            return repository.findTopBySessionIdOrderByTimestampDesc(sessionId)
+                .map(List::of)
+                .orElse(List.of());
+        }
     }
 }
