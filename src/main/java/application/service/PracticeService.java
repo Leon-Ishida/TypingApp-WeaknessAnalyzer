@@ -51,7 +51,7 @@ public class PracticeService {
         // 選択した期間の記録のみを抽出する
             LocalDateTime startDateTime = request.startDate().atStartOfDay();
             LocalDateTime lastDateTime = request.lastDate().plusDays(1).atStartOfDay();
-            selectedRecords = repository.findByUserIdAndTimestampThanGreaterThanEqualAndTimestampLessThanOrderByTimestamp(userId, startDateTime, lastDateTime);
+            selectedRecords = repository.findByUserIdAndTimestampGreaterThanEqualAndTimestampLessThanOrderByTimestamp(userId, startDateTime, lastDateTime);
         } else {
             // 指定がない場合全期間の記録を抽出する
             selectedRecords = repository.findByUserIdOrderByTimestamp(userId);

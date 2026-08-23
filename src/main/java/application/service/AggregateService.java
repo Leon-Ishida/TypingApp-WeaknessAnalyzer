@@ -109,7 +109,7 @@ public class AggregateService {
             if (request.startDate() != null) {
                 LocalDateTime startDateTime = request.startDate().atStartOfDay();
                 LocalDateTime endDateTime = request.lastDate().plusDays(1).atStartOfDay();
-                return repository.findByUserIdAndTimestampThanGreaterThanEqualAndTimestampLessThanOrderByTimestamp(userId, startDateTime, endDateTime);
+                return repository.findByUserIdAndTimestampGreaterThanEqualAndTimestampLessThanOrderByTimestamp(userId, startDateTime, endDateTime);
             } else {
                 return repository.findByUserIdOrderByTimestamp(userId);
             }
