@@ -2,6 +2,7 @@ package application.service;
 
 import application.model.TestResult;
 import application.repository.TestResultRepository;
+import application.security.CustomUserDetails;
 import application.service.WeaknessAnalyzer.InsertionPair;
 import application.service.WeaknessAnalyzer.SubstitutionPair;
 import application.service.WeaknessAnalyzer.TranspositionPair;
@@ -20,6 +21,7 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
 /**
@@ -41,18 +43,18 @@ public class PracticeService {
         this.repository = repository;
     }
 
-    public List<String> generatePracticeWords(PracticeGenerateRequest request) {
-        LocalDateTime startDateTime;
-        LocalDateTime lastDateTime;
+    public List<String> generatePracticeWords(PracticeGenerateRequest request, Authentication authentication) {
         List<TestResultEntity> selectedRecords;
+        String userId = ((CustomUserDetails) authentication.getPrincipal()).getUserId().toString();
+
         if (request.startDate() != null) {
         // 選択した期間の記録のみを抽出する
-            startDateTime = request.startDate().atStartOfDay();
-            lastDateTime = request.lastDate().plusDays(1).atStartOfDay();
-            selectedRecords = repository.findByTimestampGreaterThanEqualAndTimestampLessThanOrderByTimestamp(startDateTime, lastDateTime);
+            LocalDateTime startDateTime = request.startDate().atStartOfDay();
+            LocalDateTime lastDateTime = request.lastDate().plusDays(1).atStartOfDay();
+            selectedRecords = repository.findByUserIdAndTimestampThanGreaterThanEqualAndTimestampLessThanOrderByTimestamp(userId, startDateTime, lastDateTime);
         } else {
             // 指定がない場合全期間の記録を抽出する
-            selectedRecords = repository.findAllByOrderByTimestamp();
+            selectedRecords = repository.findByUserIdOrderByTimestamp(userId);
         }
         
         List<TestResult> testResults = new ArrayList<>();

@@ -4,7 +4,6 @@ import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.when;
 
@@ -23,6 +22,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.core.Authentication;
 
 import application.dto.PracticeGenerateRequest;
 import application.entity.TestResultEntity;
@@ -40,6 +40,9 @@ public class PracticeServiceTest {
 
     @Mock
     private TestResultRepository repository;
+
+    @Mock
+    private Authentication authentication;
 
     @InjectMocks
     private PracticeService practiceService;
@@ -318,7 +321,7 @@ public class PracticeServiceTest {
     private List<String> setupWeaknessWords(List<TestResult> results) {
         setupMockRepository(results);
         PracticeGenerateRequest request = new PracticeGenerateRequest(LocalDate.of(2026, 8, 8), LocalDate.of(2026, 8, 9), PracticeMode.WEAKNESS);
-        List<String> weaknessWords = practiceService.generatePracticeWords(request);
+        List<String> weaknessWords = practiceService.generatePracticeWords(request, authentication);
         return weaknessWords;
     }
 
@@ -341,7 +344,7 @@ public class PracticeServiceTest {
     private List<String> setupFrequentWords(List<TestResult> results) {
         setupMockRepository(results);
         PracticeGenerateRequest request = new PracticeGenerateRequest(LocalDate.of(2026, 8, 8), LocalDate.of(2026, 8, 9), PracticeMode.FREQUENT);
-        List<String> frequentWords = practiceService.generatePracticeWords(request);
+        List<String> frequentWords = practiceService.generatePracticeWords(request, authentication);
         return frequentWords;
     }
 
@@ -351,7 +354,7 @@ public class PracticeServiceTest {
             mockEntities.add(TestResultEntity.fromRecord(null, null, result));
         }
 
-        when(repository.findByTimestampGreaterThanEqualAndTimestampLessThanOrderByTimestamp(any(), any()))
+        when(repository.findAll())
             .thenReturn(mockEntities);
     }
 }

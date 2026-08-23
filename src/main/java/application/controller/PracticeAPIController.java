@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.NoSuchElementException;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -29,8 +30,8 @@ public class PracticeAPIController {
 
     @Valid
     @PostMapping("/start")
-    public List<String> startPractice(@RequestBody PracticeGenerateRequest request) {
-        return practiceService.generatePracticeWords(request);
+    public List<String> startPractice(@RequestBody PracticeGenerateRequest request, Authentication authentication) {
+        return practiceService.generatePracticeWords(request, authentication);
     }
     
     @ExceptionHandler(NoSuchElementException.class)
