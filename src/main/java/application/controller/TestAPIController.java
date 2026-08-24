@@ -41,14 +41,4 @@ public class TestAPIController {
         TestResultResponse response = analyzeService.submitResult(request, session);
         return response;
     }
-    
-    @GetMapping("/results")
-    public List<TestResultResponse> getAllResults() {
-        return analyzeService.findAllResults();
-    }
-
-    @GetMapping("/results/{id}")
-    public TestResultResponse getResultById(@PathVariable Long id) {
-        return analyzeService.findResultById(id);
-    }
 }

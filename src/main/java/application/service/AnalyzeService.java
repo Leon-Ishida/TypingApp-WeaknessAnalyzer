@@ -1,6 +1,5 @@
 package application.service;
 
-import java.util.List;
 import java.util.NoSuchElementException;
 
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
@@ -66,17 +65,6 @@ public class AnalyzeService {
         TestResultEntity lastResultEntity = repository.findTopByOrderByIdDesc()
             .orElseThrow(() -> new NoSuchElementException("テスト結果がありません"));
         return lastResultEntity.toRecord();
-    }
-
-    public List<TestResultResponse> findAllResults() {
-        List<TestResultEntity> allResults = repository.findAll();
-        return allResults.stream().map(this::translateFromEntity).toList();
-    }
-
-    public TestResultResponse findResultById(Long id) {
-        TestResultEntity entity = repository.findById(id)
-            .orElseThrow(() -> new NoSuchElementException("一致するIdが存在しません"));
-        return translateFromEntity(entity);
     }
 
     private TestResult makeTestResult(TestResultRequest request) {
