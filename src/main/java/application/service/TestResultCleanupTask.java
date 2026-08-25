@@ -18,6 +18,6 @@ public class TestResultCleanupTask {
     @Scheduled(fixedRate = 600000)
     void deleteGuestResult() {
         LocalDateTime thirtyMinutesAgo = LocalDateTime.now().minusMinutes(30);
-        repository.deleteByUserIdIsNullAndTimestampBefore(thirtyMinutesAgo);;
+        repository.deleteByUserIdIsNullAndTimestampBefore(thirtyMinutesAgo);
     }
 }
