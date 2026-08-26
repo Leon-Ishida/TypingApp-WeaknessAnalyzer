@@ -7,21 +7,28 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 
+import application.security.CustomAuthSuccessHandler;
+
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
+    private final CustomAuthSuccessHandler successHandler;
+
+    public SecurityConfig(CustomAuthSuccessHandler successHandler) {
+        this.successHandler = successHandler;
+    }
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/", "/js/**", "/test/**", "/aggregate", "/register", "/auth/regist").permitAll()
+                .requestMatchers("/", "/js/**", "/test/start", "/test/results", "/aggregate", "/register", "/auth/regist").permitAll()
                 .anyRequest().authenticated()
             )
             .formLogin(login -> login
                 .loginPage("/login")
                 .usernameParameter("email")
-                .defaultSuccessUrl("/", true)
+                .successHandler(successHandler)
                 .failureUrl("/login?error")
                 .permitAll()
             )
