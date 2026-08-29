@@ -108,4 +108,6 @@ public class TestResultEntity {
     public double getWpm() { return wpm; }
     public double getAccuracy() { return accuracy; }
     public List<WordResultEntity> getWordResultEntities() { return wordResultEntities; }
+
+    public void setUserId(String userId) { this.userId = userId; }
 }
