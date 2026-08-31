@@ -30,6 +30,9 @@
         <div id="test-result-ui" class="hidden max-w-3xl mx-auto space-y-6">
             <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-8 text-center relative overflow-hidden">
                 <h2 class="text-2xl font-bold mb-6">テスト結果</h2>
+                <div th:unless="${#authorization.expression('isAuthenticated()')}" class="mb-6 rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm leading-6 text-blue-800">
+                    この結果は一時保存されています。30分以内にログインするとアカウントに保存できます。
+                </div>
                 <div class="flex justify-center gap-12">
                     <div>
                         <p class="text-5xl font-bold text-gray-900 mono" id="res-wpm">--</p>
