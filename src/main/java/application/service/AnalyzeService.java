@@ -61,9 +61,11 @@ public class AnalyzeService {
             TestResultEntity savedEntity = repository.save(entity);
 
             if (savedEntity.getId() != null && !isLoggedIn) {
-                Set<Long> unLoginedResults = GuestResultsSessionStore.getSessionCandidateIds(session.getAttribute("unLoginedResults"));
-                unLoginedResults.add(savedEntity.getId());
-                session.setAttribute("unLoginedResults", unLoginedResults);
+                synchronized (session) {
+                    Set<Long> unLoginedResults = GuestResultsSessionStore.getSessionCandidateIds(session.getAttribute("unLoginedResults"));
+                    unLoginedResults.add(savedEntity.getId());
+                    session.setAttribute("unLoginedResults", unLoginedResults);
+                }
             }
         }
         return translateFromEntity(entity);
