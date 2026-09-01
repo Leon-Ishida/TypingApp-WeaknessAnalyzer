@@ -1,6 +1,7 @@
 package application.service;
 
 import java.util.NoSuchElementException;
+import java.util.Set;
 
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -13,6 +14,7 @@ import application.entity.TestResultEntity;
 import application.model.TestResult;
 import application.repository.TestResultRepository;
 import application.security.CustomUserDetails;
+import application.session.GuestResultsSessionStore;
 import application.typingtest.TypingAnalyzer;
 import jakarta.servlet.http.HttpSession;
 
@@ -56,7 +58,13 @@ public class AnalyzeService {
         TestResultEntity entity = TestResultEntity.fromRecord(userId, session.getId(), result);
         
         if (request.isTest()) {
-            repository.save(entity);
+            TestResultEntity savedEntity = repository.save(entity);
+
+            if (savedEntity.getId() != null && !isLoggedIn) {
+                Set<Long> unLoginedResults = GuestResultsSessionStore.getSessionCandidateIds(session.getAttribute("unLoginedResults"));
+                unLoginedResults.add(savedEntity.getId());
+                session.setAttribute("unLoginedResults", unLoginedResults);
+            }
         }
         return translateFromEntity(entity);
     }
