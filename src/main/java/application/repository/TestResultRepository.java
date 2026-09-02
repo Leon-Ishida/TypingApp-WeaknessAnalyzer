@@ -26,6 +26,8 @@ public interface TestResultRepository extends JpaRepository<TestResultEntity, Lo
 
     Optional<TestResultEntity> findTopBySessionIdOrderByTimestampDesc(String sessionId);
 
+    boolean existsByIdInAndUserIdIsNullAndTimestampGreaterThanEqual(Collection<Long> ids, LocalDateTime cutoff);
+
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query("""
             UPDATE TestResultEntity result
