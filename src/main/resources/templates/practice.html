@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="ja" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('弱点克服練習')}"></head>
+<body class="min-h-screen flex flex-col">
+    <header th:replace="~{fragments/layout :: header('practice')}"></header>
+
+    <main class="flex-1 max-w-5xl mx-auto w-full p-4 md:p-8">
+        <!-- 練習設定UI -->
+        <div id="practice-setup-ui" class="bg-white rounded-xl shadow-sm border border-gray-100 p-8 max-w-2xl mx-auto">
+            <h2 class="text-2xl font-bold mb-2 text-center">弱点克服練習</h2>
+            <p class="text-sm text-gray-500 text-center mb-8">過去のデータから、あなたに最適な練習問題を出題します。</p>
+            
+            <div class="space-y-6">
+                <div>
+                    <label class="block font-medium text-gray-700 mb-2">1. 抽出対象期間</label>
+                    <div class="flex gap-4">
+                        <input type="date" id="practice-start-date" class="border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-blue-500" />
+                        <span class="self-center text-gray-400">〜</span>
+                        <input type="date" id="practice-end-date" class="border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-blue-500" />
+                    </div>
+                </div>
+                
+                <div>
+                    <label class="block font-medium text-gray-700 mb-2">2. 練習モード</label>
+                    <div class="grid grid-cols-2 gap-4">
+                        <label class="border-2 border-gray-200 rounded-lg p-4 cursor-pointer hover:border-blue-200 transition-colors has-[:checked]:border-blue-600 has-[:checked]:bg-blue-50">
+                            <input type="radio" name="practice_mode" value="WEAKNESS" class="sr-only" checked>
+                            <div class="font-bold text-blue-900 mb-1">特定ミス集中</div>
+                            <div class="text-xs text-gray-500">間違いの多いパターンの単語を集中的に練習</div>
+                        </label>
+                        <label class="border-2 border-gray-200 rounded-lg p-4 cursor-pointer hover:border-blue-200 transition-colors has-[:checked]:border-blue-600 has-[:checked]:bg-blue-50">
+                            <input type="radio" name="practice_mode" value="FREQUENT" class="sr-only">
+                            <div class="font-bold text-blue-900 mb-1">頻出ミス単語</div>
+                            <div class="text-xs text-gray-500">純粋にミスした回数が多い単語を反復練習</div>
+                        </label>
+                    </div>
+                </div>
+                <div class="pt-4 text-center">
+                    <button id="btn-start-practice" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-12 rounded-lg shadow-md transition-transform transform active:scale-95">練習開始</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 練習実行UI (テスト画面と同様の構造) -->
+        <div id="practice-active-ui" class="hidden max-w-2xl mx-auto bg-white rounded-xl shadow-sm border border-gray-100 p-8">
+            <div class="flex justify-between text-sm font-medium text-gray-500 mb-2">
+                <span id="practice-progress-label">0 / 10</span>
+                <span id="practice-elapsed-label">00:00</span>
+            </div>
+            <div class="h-2 bg-gray-100 rounded-full mb-10 overflow-hidden">
+                <div id="practice-progress-fill" class="h-full bg-green-500 transition-all duration-300" style="width: 0%"></div>
+            </div>
+            <div class="text-center">
+                <p id="practice-word-display" class="mono text-4xl text-gray-800 mb-8 tracking-wider"></p>
+                <input type="text" id="practice-input" class="typing-input w-full max-w-sm mx-auto border-2 border-gray-200 rounded-lg p-3 bg-gray-50" autocomplete="off" spellcheck="false" placeholder="Type here..." />
+                <p class="text-xs text-gray-400 mt-4">Enterキーで次の単語へ</p>
+            </div>
+        </div>
+
+        <!-- 練習結果UI -->
+        <div id="practice-result-ui" class="hidden max-w-3xl mx-auto space-y-6">
+            <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-8 text-center relative overflow-hidden">
+                <h2 class="text-2xl font-bold mb-6">練習完了</h2>
+                <div class="flex justify-center gap-12">
+                    <div>
+                        <p class="text-5xl font-bold text-gray-900 mono" id="prac-res-wpm">--</p>
+                        <p class="text-sm text-gray-500 mt-1 font-medium">WPM</p>
+                    </div>
+                    <div>
+                        <p class="text-5xl font-bold text-gray-900 mono" id="prac-res-acc">--<span class="text-2xl">%</span></p>
+                        <p class="text-sm text-gray-500 mt-1 font-medium">正答率</p>
+                    </div>
+                </div>
+                <div class="mt-8 flex justify-center gap-4">
+                    <button id="btn-retry-practice" class="px-6 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded-lg transition-colors">設定に戻る</button>
+                    <a th:href="@{/}" class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors shadow-sm">テストに挑戦する</a>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="/js/common.js"></script>
+    <script src="/js/practice.js"></script>
+</body>
+</html>

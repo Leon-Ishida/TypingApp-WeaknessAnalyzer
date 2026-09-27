@@ -115,6 +115,9 @@ mvn spring-boot:run
     - 主なカラム: `id`, `test_result_id(FK)`, `word`, `answer`
 - **[mistake_detail](src/main/java/application/entity/MistakeDetailEntity.java)** 単語ごとのミス詳細
     - 主なカラム: `id`, `word_result_id(FK)`, `mistake_type`, `expected`, `actual`, `insertion`
+- **[user_table](src/main/java/application/entity/UserEntity.java)** 登録ユーザーを管理するテーブル
+    - 主なカラム: `id`, `userName`, `email`, `password`
+    - `password`は`BCryptPasswordEncoder()`を用いてハッシュ化している
 
 #### リレーション
 - `test_result` 1 : N `word_result`

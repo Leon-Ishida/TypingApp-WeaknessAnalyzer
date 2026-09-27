@@ -1,8 +1,11 @@
 package application.service;
 
-import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Set;
 
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import application.dto.TestResultRequest;
@@ -10,7 +13,10 @@ import application.dto.TestResultResponse;
 import application.entity.TestResultEntity;
 import application.model.TestResult;
 import application.repository.TestResultRepository;
+import application.security.CustomUserDetails;
+import application.session.GuestResultsSessionStore;
 import application.typingtest.TypingAnalyzer;
+import jakarta.servlet.http.HttpSession;
 
 @Service
 public class AnalyzeService {
@@ -33,11 +39,34 @@ public class AnalyzeService {
         );
     }
 
-    public TestResultResponse submitResult(TestResultRequest request) {
+    public TestResultResponse submitResult(TestResultRequest request, HttpSession session) {
         TestResult result = makeTestResult(request);
-        TestResultEntity entity = TestResultEntity.fromRecord(result);
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        boolean isLoggedIn = (authentication != null) 
+            && (authentication.isAuthenticated()) 
+            && !(authentication instanceof AnonymousAuthenticationToken);
+
+        String userId = null;
+        if (isLoggedIn) {
+            Object principal = authentication.getPrincipal();
+            if (principal instanceof CustomUserDetails customUserDetails) {
+                userId = customUserDetails.getUserId().toString();
+            }
+        }
+
+        TestResultEntity entity = TestResultEntity.fromRecord(userId, session.getId(), result);
+        
         if (request.isTest()) {
-            repository.save(entity);
+            TestResultEntity savedEntity = repository.save(entity);
+
+            if (savedEntity.getId() != null && !isLoggedIn) {
+                synchronized (session) {
+                    Set<Long> unLoginedResults = GuestResultsSessionStore.getSessionCandidateIds(session.getAttribute("unLoginedResults"));
+                    unLoginedResults.add(savedEntity.getId());
+                    session.setAttribute("unLoginedResults", unLoginedResults);
+                }
+            }
         }
         return translateFromEntity(entity);
     }
@@ -46,17 +75,6 @@ public class AnalyzeService {
         TestResultEntity lastResultEntity = repository.findTopByOrderByIdDesc()
             .orElseThrow(() -> new NoSuchElementException("テスト結果がありません"));
         return lastResultEntity.toRecord();
-    }
-
-    public List<TestResultResponse> findAllResults() {
-        List<TestResultEntity> allResults = repository.findAll();
-        return allResults.stream().map(this::translateFromEntity).toList();
-    }
-
-    public TestResultResponse findResultById(Long id) {
-        TestResultEntity entity = repository.findById(id)
-            .orElseThrow(() -> new NoSuchElementException("一致するIdが存在しません"));
-        return translateFromEntity(entity);
     }
 
     private TestResult makeTestResult(TestResultRequest request) {

@@ -8,27 +8,25 @@ import application.dto.TestResultResponse;
 import application.dto.TestStartResponse;
 import application.service.AnalyzeService;
 import application.service.WordManager;
-
-import java.util.List;
+import jakarta.servlet.http.HttpSession;
 
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
 @RestController
 @RequestMapping("/test")
-public class TestController {
+public class TestAPIController {
     private final WordManager wordManager;
     private final AnalyzeService analyzeService;
 
-    public TestController(WordManager wordManager, AnalyzeService analyzeService) {
+    public TestAPIController(WordManager wordManager, AnalyzeService analyzeService) {
         this.wordManager = wordManager;
         this.analyzeService = analyzeService;
     }
 
     @GetMapping("/start")
-    public TestStartResponse startTest() {
+    public TestStartResponse startTest(HttpSession session) {
         return new TestStartResponse(
             wordManager.getTestWords(),
             System.currentTimeMillis()
@@ -36,20 +34,8 @@ public class TestController {
     }
 
     @PostMapping("/results")
-    public TestResultResponse submitTest(@RequestBody TestResultRequest request) {
-        TestResultResponse response = analyzeService.submitResult(request);
+    public TestResultResponse submitTest(@RequestBody TestResultRequest request, HttpSession session) {
+        TestResultResponse response = analyzeService.submitResult(request, session);
         return response;
     }
-    
-    @GetMapping("/results")
-    public List<TestResultResponse> getAllResults() {
-        return analyzeService.findAllResults();
-    }
-
-    @GetMapping("/results/{id}")
-    public TestResultResponse getResultById(@PathVariable Long id) {
-        return analyzeService.findResultById(id);
-    }
-    
-    
 }
