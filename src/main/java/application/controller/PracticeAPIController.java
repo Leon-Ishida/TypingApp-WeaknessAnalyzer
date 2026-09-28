@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import application.dto.PracticeGenerateRequest;
+import application.security.CustomUserDetails;
 import application.service.PracticeService;
 import jakarta.validation.Valid;
 
@@ -31,7 +32,8 @@ public class PracticeAPIController {
     @Valid
     @PostMapping("/start")
     public List<String> startPractice(@RequestBody PracticeGenerateRequest request, Authentication authentication) {
-        return practiceService.generatePracticeWords(request, authentication);
+        String userId = ((CustomUserDetails) authentication.getPrincipal()).getUserId().toString();
+        return practiceService.generatePracticeWords(request, userId);
     }
     
     @ExceptionHandler(NoSuchElementException.class)
