@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -22,7 +23,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.security.core.Authentication;
 
 import application.dto.PracticeGenerateRequest;
 import application.entity.TestResultEntity;
@@ -41,8 +41,7 @@ public class PracticeServiceTest {
     @Mock
     private TestResultRepository repository;
 
-    @Mock
-    private Authentication authentication;
+    private UUID testUserId = UUID.randomUUID();
 
     @InjectMocks
     private PracticeService practiceService;
@@ -319,9 +318,9 @@ public class PracticeServiceTest {
     }
 
     private List<String> setupWeaknessWords(List<TestResult> results) {
-        setupMockRepository(results);
         PracticeGenerateRequest request = new PracticeGenerateRequest(LocalDate.of(2026, 8, 8), LocalDate.of(2026, 8, 9), PracticeMode.WEAKNESS);
-        List<String> weaknessWords = practiceService.generatePracticeWords(request, authentication);
+        setupMockRepository(results, request.startDate().atStartOfDay(), request.lastDate().plusDays(1).atStartOfDay());
+        List<String> weaknessWords = practiceService.generatePracticeWords(request, testUserId.toString());
         return weaknessWords;
     }
 
@@ -342,19 +341,19 @@ public class PracticeServiceTest {
     }
 
     private List<String> setupFrequentWords(List<TestResult> results) {
-        setupMockRepository(results);
         PracticeGenerateRequest request = new PracticeGenerateRequest(LocalDate.of(2026, 8, 8), LocalDate.of(2026, 8, 9), PracticeMode.FREQUENT);
-        List<String> frequentWords = practiceService.generatePracticeWords(request, authentication);
+        setupMockRepository(results, request.startDate().atStartOfDay(), request.lastDate().plusDays(1).atStartOfDay());
+        List<String> frequentWords = practiceService.generatePracticeWords(request, testUserId.toString());
         return frequentWords;
     }
 
-    private void setupMockRepository(List<TestResult> results) {
+    private void setupMockRepository(List<TestResult> results, LocalDateTime startDateTime, LocalDateTime lastDateTime) {
         List<TestResultEntity> mockEntities = new ArrayList<>();
         for (TestResult result : results) {
-            mockEntities.add(TestResultEntity.fromRecord(null, null, result));
+            mockEntities.add(TestResultEntity.fromRecord(testUserId.toString(), null, result));
         }
 
-        when(repository.findAll())
+        when(repository.findByUserIdAndTimestampGreaterThanEqualAndTimestampLessThanOrderByTimestamp(testUserId.toString(), startDateTime, lastDateTime))
             .thenReturn(mockEntities);
     }
 }
