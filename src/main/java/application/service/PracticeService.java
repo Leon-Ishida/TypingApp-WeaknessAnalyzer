@@ -2,7 +2,6 @@ package application.service;
 
 import application.model.TestResult;
 import application.repository.TestResultRepository;
-import application.security.CustomUserDetails;
 import application.service.WeaknessAnalyzer.InsertionPair;
 import application.service.WeaknessAnalyzer.SubstitutionPair;
 import application.service.WeaknessAnalyzer.TranspositionPair;
@@ -21,7 +20,6 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
 /**
@@ -43,9 +41,8 @@ public class PracticeService {
         this.repository = repository;
     }
 
-    public List<String> generatePracticeWords(PracticeGenerateRequest request, Authentication authentication) {
+    public List<String> generatePracticeWords(PracticeGenerateRequest request, String userId) {
         List<TestResultEntity> selectedRecords;
-        String userId = ((CustomUserDetails) authentication.getPrincipal()).getUserId().toString();
 
         if (request.startDate() != null) {
         // 選択した期間の記録のみを抽出する
