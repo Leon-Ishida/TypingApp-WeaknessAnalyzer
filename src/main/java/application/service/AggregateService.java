@@ -3,7 +3,6 @@ package application.service;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -40,15 +39,15 @@ public class AggregateService {
         // 選択した期間の記録が30件より多いなら日にちごとの平均の推移を返す
         List<TestScoreTrend> scoreTrends = new ArrayList<>();
         if (selectedRecords.size() > AppConfig.MAX_NOT_AVERAGE_OF_TRANSITION) {
-            Iterator<TestResultEntity> resultIte = selectedRecords.iterator();
-            TestResultEntity firstRecord = resultIte.next();
+            TestResultEntity firstRecord = selectedRecords.get(0);
+            selectedRecords.remove(0);
+
             LocalDate baseDate = firstRecord.getTimestamp().toLocalDate();
             double sumWpm = firstRecord.getWpm();
             double sumAccuracy = firstRecord.getAccuracy();
             int countOfSameDay = 1;
 
-            for (;!resultIte.hasNext();) {
-                TestResultEntity record = resultIte.next();
+            for (TestResultEntity record : selectedRecords) {
                 if (record.getTimestamp().toLocalDate().isEqual(baseDate)) {
                     sumWpm += record.getWpm();
                     sumAccuracy += record.getAccuracy();
