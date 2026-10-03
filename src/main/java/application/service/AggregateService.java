@@ -40,12 +40,11 @@ public class AggregateService {
         List<TestScoreTrend> scoreTrends = new ArrayList<>();
         if (selectedRecords.size() > AppConfig.MAX_NOT_AVERAGE_OF_TRANSITION) {
             TestResultEntity firstRecord = selectedRecords.get(0);
-            selectedRecords.remove(0);
 
             LocalDate baseDate = firstRecord.getTimestamp().toLocalDate();
-            double sumWpm = firstRecord.getWpm();
-            double sumAccuracy = firstRecord.getAccuracy();
-            int countOfSameDay = 1;
+            double sumWpm = 0.0;
+            double sumAccuracy = 0.0;
+            int countOfSameDay = 0;
 
             for (TestResultEntity record : selectedRecords) {
                 if (record.getTimestamp().toLocalDate().isEqual(baseDate)) {
@@ -64,6 +63,11 @@ public class AggregateService {
                     countOfSameDay = 1;
                 }
             }
+            scoreTrends.add(new TestScoreTrend(
+                baseDate.atStartOfDay(),
+                sumWpm / countOfSameDay,
+                sumAccuracy / countOfSameDay
+            ));
         } else {
             for (TestResultEntity record : selectedRecords) {
                 scoreTrends.add(new TestScoreTrend(
@@ -105,12 +109,18 @@ public class AggregateService {
         }
 
         if (userId != null) {
-            if (request.startDate() != null) {
+            if (request.startDate() != null && request.lastDate() != null) {
                 LocalDateTime startDateTime = request.startDate().atStartOfDay();
                 LocalDateTime endDateTime = request.lastDate().plusDays(1).atStartOfDay();
                 return repository.findByUserIdAndTimestampGreaterThanEqualAndTimestampLessThanOrderByTimestamp(userId, startDateTime, endDateTime);
+            } else if (request.startDate() != null) {
+                LocalDateTime startDateTime = request.startDate().atStartOfDay();
+                return repository.findByUserIdAndTimestampGreaterThanEqualOrderByTimestamp(userId, startDateTime);
+            } else if (request.lastDate() != null) {
+                LocalDateTime endDateTime = request.lastDate().plusDays(1).atStartOfDay();
+                return repository.findByUserIdAndTimestampLessThanOrderByTimestamp(userId, endDateTime);
             } else {
-                return repository.findByUserIdOrderByTimestamp(userId);
+                return  repository.findByUserIdOrderByTimestamp(userId);
             }
         } else {
             String sessionId = session.getId();

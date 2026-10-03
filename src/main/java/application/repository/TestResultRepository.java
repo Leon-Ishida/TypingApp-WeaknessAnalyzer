@@ -24,6 +24,10 @@ public interface TestResultRepository extends JpaRepository<TestResultEntity, Lo
 
     List<TestResultEntity> findByUserIdAndTimestampGreaterThanEqualAndTimestampLessThanOrderByTimestamp(String userId, LocalDateTime startDateTime, LocalDateTime lastDateTime);
 
+    List<TestResultEntity> findByUserIdAndTimestampGreaterThanEqualOrderByTimestamp(String userId, LocalDateTime startDateTime);
+
+    List<TestResultEntity> findByUserIdAndTimestampLessThanOrderByTimestamp(String userId, LocalDateTime lastDateTime);
+
     Optional<TestResultEntity> findTopBySessionIdOrderByTimestampDesc(String sessionId);
 
     boolean existsByIdInAndUserIdIsNullAndTimestampGreaterThanEqual(Collection<Long> ids, LocalDateTime cutoff);
