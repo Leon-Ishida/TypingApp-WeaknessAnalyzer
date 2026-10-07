@@ -1,5 +1,6 @@
 package application.service;
 
+import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -168,6 +169,68 @@ public class AggregateServiceTest {
         );
 
         assertTrue(response.scoreTrends().size() == 1, "グラフ描写用統計リストが1件であること"); 
+    }
+
+    @Test 
+    @DisplayName("31件以上かつ日付が違う場合")
+    void testAnotherDay() {
+        List<TestResultEntity> selectedResult = new ArrayList<>();
+        for (int i = 0; i < 15; i++) {
+            selectedResult.add(TestResultEntity.fromRecord(
+                TESTUSERID.toString(), 
+                session.getId(), 
+                new TestResult(
+                    LocalDateTime.of(2026, 9, 5, 0, 0),
+                    new LinkedHashMap<>(),
+                    2.0,
+                    2.0
+                )
+            ));
+        }
+
+        for (int i = 0; i < 15; i++) {
+            selectedResult.add(TestResultEntity.fromRecord(
+                TESTUSERID.toString(), 
+                session.getId(), 
+                new TestResult(
+                    LocalDateTime.of(2026, 9, 6, 0, 0),
+                    new LinkedHashMap<>(),
+                    3.0,
+                    2.0
+                )
+            ));
+        }
+
+        for (int i = 0; i < 15; i++) {
+            selectedResult.add(TestResultEntity.fromRecord(
+                TESTUSERID.toString(), 
+                session.getId(), 
+                new TestResult(
+                    LocalDateTime.of(2026, 9, 7, 0, 0),
+                    new LinkedHashMap<>(),
+                    4.0,
+                    2.0
+                )
+            ));
+        }
+
+        setupRepository(selectedResult);
+
+        PeriodAnalyzeResponse response = aggregateService.makeAggregatedInfo(
+            new PeriodAnalyzeRequest(
+                LocalDate.of(2026, 9, 1),
+                LocalDate.of(2026, 9, 30)
+            ),
+            authentication,
+            session
+        );
+
+        assertAll("31件かつ複数日のテスト",
+            () -> assertTrue(response.scoreTrends().size() == 3, "統計用リストは3件であること"),
+            () -> assertTrue(response.scoreTrends().get(0).wpm() == 2.0, "1つ目のwpmの平均は2.0であること"),
+            () -> assertTrue(response.scoreTrends().get(1).wpm() == 3.0, "2つ目のwpmの平均は3.0であること"),
+            () -> assertTrue(response.scoreTrends().get(2).wpm() == 4.0, "3つ目のwpmの平均は4.0であること")
+        );
     }
 
     private void setupRepository(List<TestResultEntity> selectedResult) {
