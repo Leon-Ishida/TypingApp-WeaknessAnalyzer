@@ -67,14 +67,7 @@ public class AggregateServiceTest {
         
         setupRepository(selectedResult);
         
-        PeriodAnalyzeResponse response = aggregateService.makeAggregatedInfo(
-            new PeriodAnalyzeRequest(
-                LocalDate.of(2026, 9, 1),
-                LocalDate.of(2026, 9, 30)
-            ),
-            authentication,
-            session
-        );
+        PeriodAnalyzeResponse response = setupBothDate();
 
         assertTrue(response.scoreTrends().isEmpty(), "グラフ描写用統計リストが空であること");
     }
@@ -82,29 +75,11 @@ public class AggregateServiceTest {
     @Test 
     @DisplayName("履歴が1件の時、集計結果も1件であること")
     void testOneHistory() {
-        List<TestResultEntity> selectedResult = new ArrayList<>(List.of(
-            TestResultEntity.fromRecord(
-                TESTUSERID.toString(), 
-                session.getId(), 
-                new TestResult(
-                    LocalDateTime.of(2026, 9, 5, 0, 0),
-                    new LinkedHashMap<>(),
-                    2.0,
-                    2.0
-                )
-            )
-        ));
+        List<TestResultEntity> selectedResult = makeDummyResults(1, 5, 2.0);
 
         setupRepository(selectedResult);
         
-        PeriodAnalyzeResponse response = aggregateService.makeAggregatedInfo(
-            new PeriodAnalyzeRequest(
-                LocalDate.of(2026, 9, 1),
-                LocalDate.of(2026, 9, 30)
-            ),
-            authentication,
-            session
-        );
+        PeriodAnalyzeResponse response = setupBothDate();
 
         assertTrue(response.scoreTrends().size() == 1, "グラフ描写用統計リストが1件であること");
     }
@@ -112,30 +87,11 @@ public class AggregateServiceTest {
     @Test 
     @DisplayName("履歴が30件の時、集計結果も30件であること")
     void testThirtyHistory() {
-        List<TestResultEntity> selectedResult = new ArrayList<>();
-        for (int i = 0; i < 30; i++) {
-            selectedResult.add(TestResultEntity.fromRecord(
-                TESTUSERID.toString(), 
-                session.getId(), 
-                new TestResult(
-                    LocalDateTime.of(2026, 9, 5, 0, 0),
-                    new LinkedHashMap<>(),
-                    2.0,
-                    2.0
-                )
-            ));
-        }
+        List<TestResultEntity> selectedResult = makeDummyResults(30, 5, 2.0);
 
         setupRepository(selectedResult);
         
-        PeriodAnalyzeResponse response = aggregateService.makeAggregatedInfo(
-            new PeriodAnalyzeRequest(
-                LocalDate.of(2026, 9, 1),
-                LocalDate.of(2026, 9, 30)
-            ),
-            authentication,
-            session
-        );
+        PeriodAnalyzeResponse response = setupBothDate();
 
         assertTrue(response.scoreTrends().size() == 30, "グラフ描写用統計リストが30件であること");        
     }
@@ -143,30 +99,11 @@ public class AggregateServiceTest {
     @Test 
     @DisplayName("履歴が31件以上の時、同じ日の統計で平均がとられること")
     void testThirtyOneHistory() {
-        List<TestResultEntity> selectedResult = new ArrayList<>();
-        for (int i = 0; i < 31; i++) {
-            selectedResult.add(TestResultEntity.fromRecord(
-                TESTUSERID.toString(), 
-                session.getId(), 
-                new TestResult(
-                    LocalDateTime.of(2026, 9, 5, 0, 0),
-                    new LinkedHashMap<>(),
-                    2.0,
-                    2.0
-                )
-            ));
-        }
+        List<TestResultEntity> selectedResult = makeDummyResults(31, 5, 2.0);
 
         setupRepository(selectedResult);
         
-        PeriodAnalyzeResponse response = aggregateService.makeAggregatedInfo(
-            new PeriodAnalyzeRequest(
-                LocalDate.of(2026, 9, 1),
-                LocalDate.of(2026, 9, 30)
-            ),
-            authentication,
-            session
-        );
+        PeriodAnalyzeResponse response = setupBothDate();
 
         assertTrue(response.scoreTrends().size() == 1, "グラフ描写用統計リストが1件であること"); 
     }
@@ -174,56 +111,13 @@ public class AggregateServiceTest {
     @Test 
     @DisplayName("31件以上かつ日付が違う場合")
     void testAnotherDay() {
-        List<TestResultEntity> selectedResult = new ArrayList<>();
-        for (int i = 0; i < 15; i++) {
-            selectedResult.add(TestResultEntity.fromRecord(
-                TESTUSERID.toString(), 
-                session.getId(), 
-                new TestResult(
-                    LocalDateTime.of(2026, 9, 5, 0, 0),
-                    new LinkedHashMap<>(),
-                    2.0,
-                    2.0
-                )
-            ));
-        }
-
-        for (int i = 0; i < 15; i++) {
-            selectedResult.add(TestResultEntity.fromRecord(
-                TESTUSERID.toString(), 
-                session.getId(), 
-                new TestResult(
-                    LocalDateTime.of(2026, 9, 6, 0, 0),
-                    new LinkedHashMap<>(),
-                    3.0,
-                    2.0
-                )
-            ));
-        }
-
-        for (int i = 0; i < 15; i++) {
-            selectedResult.add(TestResultEntity.fromRecord(
-                TESTUSERID.toString(), 
-                session.getId(), 
-                new TestResult(
-                    LocalDateTime.of(2026, 9, 7, 0, 0),
-                    new LinkedHashMap<>(),
-                    4.0,
-                    2.0
-                )
-            ));
-        }
+        List<TestResultEntity> selectedResult = makeDummyResults(15, 5, 2.0);
+        selectedResult.addAll(makeDummyResults(15, 6, 3.0));
+        selectedResult.addAll(makeDummyResults(15, 7, 4.0));
 
         setupRepository(selectedResult);
 
-        PeriodAnalyzeResponse response = aggregateService.makeAggregatedInfo(
-            new PeriodAnalyzeRequest(
-                LocalDate.of(2026, 9, 1),
-                LocalDate.of(2026, 9, 30)
-            ),
-            authentication,
-            session
-        );
+        PeriodAnalyzeResponse response = setupBothDate();
 
         assertAll("31件かつ複数日のテスト",
             () -> assertTrue(response.scoreTrends().size() == 3, "統計用リストは3件であること"),
@@ -236,41 +130,12 @@ public class AggregateServiceTest {
     @Test 
     @DisplayName("最終日が1件かつ30件以下のテスト")
     void testLastDayUnderThirty() {
-        List<TestResultEntity> selectedResult = new ArrayList<>();
-        for (int i = 0; i < 15; i++) {
-            selectedResult.add(TestResultEntity.fromRecord(
-                TESTUSERID.toString(), 
-                session.getId(), 
-                new TestResult(
-                    LocalDateTime.of(2026, 9, 5, 0, 0),
-                    new LinkedHashMap<>(),
-                    2.0,
-                    2.0
-                )
-            ));
-        }
-
-        selectedResult.add(TestResultEntity.fromRecord(
-            TESTUSERID.toString(), 
-            session.getId(), 
-            new TestResult(
-                LocalDateTime.of(2026, 9, 6, 0, 0),
-                new LinkedHashMap<>(),
-                3.0,
-                3.0
-            )
-        ));
+        List<TestResultEntity> selectedResult = makeDummyResults(15, 5, 2.0);
+        selectedResult.addAll(makeDummyResults(1, 6, 3.0));
 
         setupRepository(selectedResult);
 
-        PeriodAnalyzeResponse response = aggregateService.makeAggregatedInfo(
-            new PeriodAnalyzeRequest(
-                LocalDate.of(2026, 9, 1),
-                LocalDate.of(2026, 9, 30)
-            ),
-            authentication,
-            session
-        );
+        PeriodAnalyzeResponse response = setupBothDate();
 
         assertAll("最終日が1件かつ30件以下時のテスト",
             () -> assertTrue(response.scoreTrends().size() == 16, "統計用リストは16件であること")
@@ -280,41 +145,12 @@ public class AggregateServiceTest {
     @Test 
     @DisplayName("最終日が1件かつ31件以上のテスト")
     void testLastDayOverThirty() {
-        List<TestResultEntity> selectedResult = new ArrayList<>();
-        for (int i = 0; i < 32; i++) {
-            selectedResult.add(TestResultEntity.fromRecord(
-                TESTUSERID.toString(), 
-                session.getId(), 
-                new TestResult(
-                    LocalDateTime.of(2026, 9, 5, 0, 0),
-                    new LinkedHashMap<>(),
-                    2.0,
-                    2.0
-                )
-            ));
-        }
-
-        selectedResult.add(TestResultEntity.fromRecord(
-            TESTUSERID.toString(), 
-            session.getId(), 
-            new TestResult(
-                LocalDateTime.of(2026, 9, 6, 0, 0),
-                new LinkedHashMap<>(),
-                3.0,
-                3.0
-            )
-        ));
+        List<TestResultEntity> selectedResult = makeDummyResults(30, 5, 2.0);
+        selectedResult.addAll(makeDummyResults(1, 6, 3.0));
 
         setupRepository(selectedResult);
 
-        PeriodAnalyzeResponse response = aggregateService.makeAggregatedInfo(
-            new PeriodAnalyzeRequest(
-                LocalDate.of(2026, 9, 1),
-                LocalDate.of(2026, 9, 30)
-            ),
-            authentication,
-            session
-        );
+        PeriodAnalyzeResponse response = setupBothDate();
 
         assertAll("最終日が1件かつ31件以上時のテスト",
             () -> assertTrue(response.scoreTrends().size() == 2, "統計用リストは2件であること"),
@@ -328,5 +164,33 @@ public class AggregateServiceTest {
             any(LocalDateTime.class),
             any(LocalDateTime.class)
         )).thenReturn(selectedResult);
+    }
+
+    private List<TestResultEntity> makeDummyResults(int n, int date, double wpm) {
+        List<TestResultEntity> selectedResult = new ArrayList<>();
+        for (int i = 0; i < n; i++) {
+            selectedResult.add(TestResultEntity.fromRecord(
+                TESTUSERID.toString(), 
+                session.getId(), 
+                new TestResult(
+                    LocalDateTime.of(2026, 9, date, 0, 0),
+                    new LinkedHashMap<>(),
+                    wpm,
+                    2.0
+                )
+            ));
+        }
+        return selectedResult;
+    }
+
+    private PeriodAnalyzeResponse setupBothDate() {
+        return aggregateService.makeAggregatedInfo(
+            new PeriodAnalyzeRequest(
+                LocalDate.of(2026, 9, 1),
+                LocalDate.of(2026, 9, 30)
+            ),
+            authentication,
+            session
+        );
     }
 }
