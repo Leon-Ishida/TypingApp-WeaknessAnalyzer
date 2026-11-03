@@ -234,8 +234,8 @@ public class AggregateServiceTest {
     }
 
     @Test 
-    @DisplayName("最終日が1件のみのテスト")
-    void testLastDayUnserThirty() {
+    @DisplayName("最終日が1件かつ30件以下のテスト")
+    void testLastDayUnderThirty() {
         List<TestResultEntity> selectedResult = new ArrayList<>();
         for (int i = 0; i < 15; i++) {
             selectedResult.add(TestResultEntity.fromRecord(
@@ -274,6 +274,51 @@ public class AggregateServiceTest {
 
         assertAll("最終日が1件かつ30件以下時のテスト",
             () -> assertTrue(response.scoreTrends().size() == 16, "統計用リストは16件であること")
+        );
+    }
+
+    @Test 
+    @DisplayName("最終日が1件かつ31件以上のテスト")
+    void testLastDayOverThirty() {
+        List<TestResultEntity> selectedResult = new ArrayList<>();
+        for (int i = 0; i < 32; i++) {
+            selectedResult.add(TestResultEntity.fromRecord(
+                TESTUSERID.toString(), 
+                session.getId(), 
+                new TestResult(
+                    LocalDateTime.of(2026, 9, 5, 0, 0),
+                    new LinkedHashMap<>(),
+                    2.0,
+                    2.0
+                )
+            ));
+        }
+
+        selectedResult.add(TestResultEntity.fromRecord(
+            TESTUSERID.toString(), 
+            session.getId(), 
+            new TestResult(
+                LocalDateTime.of(2026, 9, 6, 0, 0),
+                new LinkedHashMap<>(),
+                3.0,
+                3.0
+            )
+        ));
+
+        setupRepository(selectedResult);
+
+        PeriodAnalyzeResponse response = aggregateService.makeAggregatedInfo(
+            new PeriodAnalyzeRequest(
+                LocalDate.of(2026, 9, 1),
+                LocalDate.of(2026, 9, 30)
+            ),
+            authentication,
+            session
+        );
+
+        assertAll("最終日が1件かつ31件以上時のテスト",
+            () -> assertTrue(response.scoreTrends().size() == 2, "統計用リストは2件であること"),
+            () -> assertTrue(response.scoreTrends().get(1).wpm() == 3.0, "最終日の結果も含まれていること")
         );
     }
 
