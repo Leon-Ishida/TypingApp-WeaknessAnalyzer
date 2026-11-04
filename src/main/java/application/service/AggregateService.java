@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import application.dto.PeriodAnalyzeRequest;
 import application.dto.PeriodAnalyzeResponse;
 import application.entity.TestResultEntity;
+import application.exception.InvalidDateRangeException;
 import application.model.AppConfig;
 import application.model.MistakeTopTrends;
 import application.model.TestResult;
@@ -108,16 +109,22 @@ public class AggregateService {
             }
         }
 
+        LocalDate startDate = request.startDate();
+        LocalDate lastDate  = request.lastDate();
+
         if (userId != null) {
-            if (request.startDate() != null && request.lastDate() != null) {
-                LocalDateTime startDateTime = request.startDate().atStartOfDay();
-                LocalDateTime endDateTime = request.lastDate().plusDays(1).atStartOfDay();
+            if (startDate != null && lastDate != null && startDate.isAfter(lastDate)) {
+                throw new InvalidDateRangeException("開始日は終了日以前を指定してください");
+            }
+            if (startDate != null && lastDate != null) {
+                LocalDateTime startDateTime = startDate.atStartOfDay();
+                LocalDateTime endDateTime = lastDate.plusDays(1).atStartOfDay();
                 return repository.findByUserIdAndTimestampGreaterThanEqualAndTimestampLessThanOrderByTimestamp(userId, startDateTime, endDateTime);
-            } else if (request.startDate() != null) {
-                LocalDateTime startDateTime = request.startDate().atStartOfDay();
+            } else if (startDate != null) {
+                LocalDateTime startDateTime = startDate.atStartOfDay();
                 return repository.findByUserIdAndTimestampGreaterThanEqualOrderByTimestamp(userId, startDateTime);
-            } else if (request.lastDate() != null) {
-                LocalDateTime endDateTime = request.lastDate().plusDays(1).atStartOfDay();
+            } else if (lastDate != null) {
+                LocalDateTime endDateTime = lastDate.plusDays(1).atStartOfDay();
                 return repository.findByUserIdAndTimestampLessThanOrderByTimestamp(userId, endDateTime);
             } else {
                 return  repository.findByUserIdOrderByTimestamp(userId);
