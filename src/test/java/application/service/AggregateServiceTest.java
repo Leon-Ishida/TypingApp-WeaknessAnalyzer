@@ -1,9 +1,11 @@
 package application.service;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.time.LocalDate;
@@ -25,6 +27,7 @@ import org.springframework.security.core.Authentication;
 import application.dto.PeriodAnalyzeRequest;
 import application.dto.PeriodAnalyzeResponse;
 import application.entity.TestResultEntity;
+import application.exception.InvalidDateRangeException;
 import application.model.TestResult;
 import application.repository.TestResultRepository;
 import application.security.CustomUserDetails;
@@ -155,6 +158,65 @@ public class AggregateServiceTest {
         assertAll("最終日が1件かつ31件以上時のテスト",
             () -> assertTrue(response.scoreTrends().size() == 2, "統計用リストは2件であること"),
             () -> assertTrue(response.scoreTrends().get(1).wpm() == 3.0, "最終日の結果も含まれていること")
+        );
+    }
+
+    @Test 
+    @DisplayName("開始日のみ指定したときのテスト")
+    void testStartDateOnly() {
+        LocalDate startDate = LocalDate.of(2026, 9, 5);
+
+        when(repository.findByUserIdAndTimestampGreaterThanEqualOrderByTimestamp(
+            TESTUSERID.toString(), 
+            startDate.atStartOfDay()
+        )).thenReturn(List.of());
+
+        aggregateService.makeAggregatedInfo(
+            new PeriodAnalyzeRequest(startDate, null), 
+            authentication, 
+            session
+        );
+
+        verify(repository).findByUserIdAndTimestampGreaterThanEqualOrderByTimestamp(
+            TESTUSERID.toString(), 
+            startDate.atStartOfDay()
+        );
+    }
+
+    @Test 
+    @DisplayName("終了日のみを指定したときのテスト")
+    void testLastDateOnly() {
+        LocalDate lastDate = LocalDate.of(2026, 9, 5);
+
+        when(repository.findByUserIdAndTimestampLessThanOrderByTimestamp(
+            TESTUSERID.toString(), 
+            lastDate.plusDays(1).atStartOfDay()
+        )).thenReturn(List.of());
+
+        aggregateService.makeAggregatedInfo(
+            new PeriodAnalyzeRequest(null, lastDate), 
+            authentication, 
+            session
+        );
+
+        verify(repository).findByUserIdAndTimestampLessThanOrderByTimestamp(
+            TESTUSERID.toString(), 
+            lastDate.plusDays(1).atStartOfDay()
+        );
+    }
+
+    @Test 
+    @DisplayName("開始日が終了日より後にくる場合のテスト")
+    void testStartDateAfterLastDate() {
+        LocalDate startDate = LocalDate.of(2026, 9, 6);
+        LocalDate lastDate  = LocalDate.of(2026, 9, 5);
+
+        assertThrows(
+            InvalidDateRangeException.class, 
+            () -> aggregateService.makeAggregatedInfo(
+                new PeriodAnalyzeRequest(startDate, lastDate), 
+                authentication, session
+            )
         );
     }
 
