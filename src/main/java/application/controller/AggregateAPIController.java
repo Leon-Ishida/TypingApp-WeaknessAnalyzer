@@ -4,6 +4,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import application.dto.PeriodAnalyzeRequest;
 import application.dto.PeriodAnalyzeResponse;
+import application.exception.InvalidDateRangeException;
 import application.service.AggregateService;
 import jakarta.servlet.http.HttpSession;
 
@@ -32,5 +33,10 @@ public class AggregateAPIController {
     @ExceptionHandler(NoSuchElementException.class)
     public ResponseEntity<String> invalidIdException(NoSuchElementException e) {
         return ResponseEntity.status(404).body(e.getMessage());
+    }
+
+    @ExceptionHandler(InvalidDateRangeException.class)
+    public ResponseEntity<String> invalidDateRangeException(InvalidDateRangeException e) {
+        return ResponseEntity.status(400).body(e.getMessage());
     }
 }

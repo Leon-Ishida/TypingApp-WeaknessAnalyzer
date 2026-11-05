@@ -3,7 +3,6 @@ package application.service;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -14,6 +13,7 @@ import org.springframework.stereotype.Service;
 import application.dto.PeriodAnalyzeRequest;
 import application.dto.PeriodAnalyzeResponse;
 import application.entity.TestResultEntity;
+import application.exception.InvalidDateRangeException;
 import application.model.AppConfig;
 import application.model.MistakeTopTrends;
 import application.model.TestResult;
@@ -40,15 +40,14 @@ public class AggregateService {
         // 選択した期間の記録が30件より多いなら日にちごとの平均の推移を返す
         List<TestScoreTrend> scoreTrends = new ArrayList<>();
         if (selectedRecords.size() > AppConfig.MAX_NOT_AVERAGE_OF_TRANSITION) {
-            Iterator<TestResultEntity> resultIte = selectedRecords.iterator();
-            TestResultEntity firstRecord = resultIte.next();
-            LocalDate baseDate = firstRecord.getTimestamp().toLocalDate();
-            double sumWpm = firstRecord.getWpm();
-            double sumAccuracy = firstRecord.getAccuracy();
-            int countOfSameDay = 1;
+            TestResultEntity firstRecord = selectedRecords.get(0);
 
-            for (;!resultIte.hasNext();) {
-                TestResultEntity record = resultIte.next();
+            LocalDate baseDate = firstRecord.getTimestamp().toLocalDate();
+            double sumWpm = 0.0;
+            double sumAccuracy = 0.0;
+            int countOfSameDay = 0;
+
+            for (TestResultEntity record : selectedRecords) {
                 if (record.getTimestamp().toLocalDate().isEqual(baseDate)) {
                     sumWpm += record.getWpm();
                     sumAccuracy += record.getAccuracy();
@@ -65,6 +64,11 @@ public class AggregateService {
                     countOfSameDay = 1;
                 }
             }
+            scoreTrends.add(new TestScoreTrend(
+                baseDate.atStartOfDay(),
+                sumWpm / countOfSameDay,
+                sumAccuracy / countOfSameDay
+            ));
         } else {
             for (TestResultEntity record : selectedRecords) {
                 scoreTrends.add(new TestScoreTrend(
@@ -105,13 +109,25 @@ public class AggregateService {
             }
         }
 
+        LocalDate startDate = request.startDate();
+        LocalDate lastDate  = request.lastDate();
+
         if (userId != null) {
-            if (request.startDate() != null) {
-                LocalDateTime startDateTime = request.startDate().atStartOfDay();
-                LocalDateTime endDateTime = request.lastDate().plusDays(1).atStartOfDay();
+            if (startDate != null && lastDate != null && startDate.isAfter(lastDate)) {
+                throw new InvalidDateRangeException("開始日は終了日以前を指定してください");
+            }
+            if (startDate != null && lastDate != null) {
+                LocalDateTime startDateTime = startDate.atStartOfDay();
+                LocalDateTime endDateTime = lastDate.plusDays(1).atStartOfDay();
                 return repository.findByUserIdAndTimestampGreaterThanEqualAndTimestampLessThanOrderByTimestamp(userId, startDateTime, endDateTime);
+            } else if (startDate != null) {
+                LocalDateTime startDateTime = startDate.atStartOfDay();
+                return repository.findByUserIdAndTimestampGreaterThanEqualOrderByTimestamp(userId, startDateTime);
+            } else if (lastDate != null) {
+                LocalDateTime endDateTime = lastDate.plusDays(1).atStartOfDay();
+                return repository.findByUserIdAndTimestampLessThanOrderByTimestamp(userId, endDateTime);
             } else {
-                return repository.findByUserIdOrderByTimestamp(userId);
+                return  repository.findByUserIdOrderByTimestamp(userId);
             }
         } else {
             String sessionId = session.getId();
